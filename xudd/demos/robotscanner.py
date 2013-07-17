@@ -1,7 +1,27 @@
+from __future__ import print_function
+
 from xudd.hive import Hive
 from xudd.actor import Actor
 
+# List of room tuples of (clean_droids, infected_droids)
+
+ROOM_STRUCTURE = [
+    (3, 1),
+    (0, 2),
+    (8, 5),
+    (5, 0),
+    (2, 1)]
+
+
 class Overseer(Actor):
+    def __init__(self, *args, **kwargs):
+        super(Overseer, self).__init__(*args, **kwargs)
+
+        self.message_routing.extend(
+            {"init_world": self.init_world,
+             "transmission": self.transmission,
+             "compile_and_shutdown": self.compile_and_shutdown})
+
     def init_world(self):
         # Add rooms and droids
         last_room = None
@@ -11,18 +31,24 @@ class Overseer(Actor):
             room = WarehouseRoom(self.hive)
 
             if last_room:
-                last_room.next_room = room.id
-                room.previous_room = last_room.id
+                self.hive.send_message(
+                    to=last_room.id,
+                    directive="set_next_room",
+                    body={"id": room.id})
+                self.hive.send_message(
+                    to=room.id,
+                    directive="set_previous_room",
+                    body={"id": last_room.id})
 
             for droid_num in range(clean_droids):
                 droid = Droid(self.hive, infected=False, room=room.id)
-                result = yield self.wait_on_message(
+                yield self.wait_on_message(
                     to=droid.id,
                     directive="register_with_room")
 
             for droid_num in range(infected_droids):
                 droid = Droid(self.hive, infected=True, room=room.id)
-                result = yield self.wait_on_message(
+                yield self.wait_on_message(
                     to=droid.id,
                     directive="register_with_room")
 
@@ -40,12 +66,25 @@ class Overseer(Actor):
             body={
                 "starting_room": first_room.id})
 
-    def compile_and_shutdown(self):
-        pass
+    def transmission(self, message):
+        print_function(message.body['message'])
 
 
 class WarehouseRoom(Actor):
-    pass
+    def __init__(self, *args, **kwargs):
+        super(WarehouseRoom, self).__init__(*args, **kwargs)
+        self.droids = []
+        self.next_room = None
+        self.previous_room = None
+
+    def set_next_room(self, message):
+        pass
+
+    def set_previous_room(self, message):
+        pass
+
+    def register_droid(self, message):
+        self.droids.append(message.body['droid_id'])
 
 
 class Droid(Actor):
@@ -54,16 +93,6 @@ class Droid(Actor):
 
 class SecurityRobot(Actor):
     pass
-
-
-# List of room tuples of (clean_droids, infected_droids)
-
-ROOM_STRUCTURE = [
-    (3, 1),
-    (0, 2),
-    (8, 5),
-    (5, 0),
-    (2, 1)]
 
 
 def main():
