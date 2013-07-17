@@ -1,3 +1,20 @@
+"""Robot Scanner XUDD test demo.
+
+Here's the premise.  There's a warehouse full of droids, some
+infected, and some not.  The SecurityRobot is being sent in to clean
+up the mess.  It's capable of sending a message that infected droids
+are susceptible to responding in a predictable way.  Once it has
+identified that a droid is infected, it shoots it full of holes till
+the droid is terminated.  The SecurityRobot goes from room to room
+till things are cleared out.
+
+Overseeing the operation is the "overseer".  The security robot keeps
+the overseer up to date on its progress as it goes.  (For this demo,
+the overseer is also responsible for initializing the world and
+reporting info back to the user.)
+"""
+
+
 from __future__ import print_function
 import random
 
@@ -167,6 +184,12 @@ class SecurityRobot(Actor):
         self.room = message.body['starting_room']
 
         while True:
+            self.hive.send_message(
+                to="overseer",
+                directive="transmission",
+                body={
+                    "message": "Entering room %s..." % self.room})
+
             # Find all the droids in this room and exterminate the
             # infected ones.
             response = yield self.wait_on_message(
@@ -225,6 +248,11 @@ class SecurityRobot(Actor):
                 break
 
         # Good job everyone! Shut down the operation.
+        self.hive.send_message(
+            to="overseer",
+            directive="transmission",
+            body={
+                "message": "Mission accomplished."})
         self.hive.send_shutdown()
 
 
