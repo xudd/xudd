@@ -1,10 +1,6 @@
 from xudd.hive import Hive
 from xudd.actor import Actor
 
-class SecurityRobot(Actor):
-    pass
-
-
 class Overseer(Actor):
     def init_world(self):
         # Add rooms and droids
@@ -51,7 +47,12 @@ class Overseer(Actor):
 class WarehouseRoom(Actor):
     pass
 
+
 class Droid(Actor):
+    pass
+
+
+class SecurityRobot(Actor):
     pass
 
 
