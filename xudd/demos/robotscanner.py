@@ -201,6 +201,7 @@ class SecurityRobot(Actor):
     def begin_mission(self, message):
         self.room = message.body['starting_room']
 
+        # Walk through all rooms, clearing out infected droids
         while True:
             self.hive.send_message(
                 to="overseer",
