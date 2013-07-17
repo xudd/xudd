@@ -32,6 +32,10 @@ ROOM_STRUCTURE = [
 
 
 class Overseer(Actor):
+    """
+    Actor that initializes the world of this demo, starts the mission,
+    and sends information about what's going on back to the user.
+    """
     def __init__(self, *args, **kwargs):
         super(Overseer, self).__init__(self, *args, **kwargs)
 
@@ -41,6 +45,9 @@ class Overseer(Actor):
              "compile_and_shutdown": self.compile_and_shutdown})
 
     def init_world(self):
+        """
+        Initialize the world we're operating in for this demo.
+        """
         # Add rooms and droids
         last_room = None
         first_room = None
@@ -89,6 +96,9 @@ class Overseer(Actor):
 
 
 class WarehouseRoom(Actor):
+    """
+    A room full of robots.
+    """
     def __init__(self, *args, **kwargs):
         super(WarehouseRoom, self).__init__(self, *args, **kwargs)
         self.droids = []
@@ -127,6 +137,11 @@ class WarehouseRoom(Actor):
 
 
 class Droid(Actor):
+    """
+    A droid that may or may not be infected!
+
+    What will happen?  Stay tuned!
+    """
     def __init__(self, hive, id, infected=False):
         super(Droid, self).__init__(self, hive, id)
         self.infected = infected
@@ -160,6 +175,9 @@ DEAD_FORMAT = "Droid %s shot; taken %s damage. Terminated."
 
 
 class SecurityRobot(Actor):
+    """
+    Security robot... designed to seek out and destroy infected droids.
+    """
     def __init__(self, hive, id):
         super(SecurityRobot, self).__init__(self, hive, id)
 
@@ -266,3 +284,7 @@ def main():
         directive="init_world")
 
     hive.workloop()
+
+
+if __name__ == "__main__":
+    main()
