@@ -1,18 +1,24 @@
+import uuid
 from types import GeneratorType
 
 class Actor(object):
     """
     Basic XUDD actor.
     """
-    def __init__(self, hive):
+    def __init__(self, hive, id=None):
         self.hive = hive
+        self.id = id or uuid.uuid4()
 
         self.message_routing = {}
 
         # Registry on coroutines that are currently waiting for a response
         self._waiting_coroutines = {}
 
+
     def handle_message(self, message):
+        """
+        Handle a message being sent to this actor.
+        """
         # If this message is continuing a coroutine-in-waiting, we'll
         # handle that.
         if message.reply_to is not None \
@@ -47,3 +53,8 @@ class Actor(object):
             message_id = self.hive.send_message(message_to_send)
             self._waiting_coroutines[message_id] = coroutine
             return
+
+
+class ActorProxy(object):
+    def __init__(self, actor_id):
+        self.id = actor_id
