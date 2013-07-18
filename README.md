@@ -61,15 +61,16 @@ multi-process and multi-machine stuff comes in).
 
 XUDD is designed with plans for various uses:
  - More modern web application systems (but with drop-in integration
-   with old WSGI applications), but not just HTTP: built-in assistance
-   for
+   with old WSGI applications), but not just HTTP: built-in tooling
+   for integrating WebSockets and task handling (a-la Celery)
  - Writing multiplayer games like MUD systems or MMORPGs.  Sure, why
    not?  The actor model is perfect for this.
  - Distributed data crunching.
 
 Of couse, a lot of this is speculative.  I'm not sure if we'll
-actually acheive all that... for now this is a lot of theory. :)
-Right now we're mostly just laying down the infrastructure.  
+actually acheive all that... for now this is a lot of theory. :) Right
+now we're mostly just laying down the infrastructure.  Interested?  We
+could use your help.
 
 
 Why?
