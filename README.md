@@ -1,5 +1,5 @@
-XUDD: An Async / Actor Model System for Python
-==============================================
+XUDD: A Python Async Actor Model System
+=======================================
 
 <pre>
   FROM THE DARKNESS, OLD GODS AROSE TO
