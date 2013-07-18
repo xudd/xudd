@@ -6,11 +6,45 @@
 XUDD: An Asynchronous Actor Model System for Python
 ===================================================
 
-Contents:
+XUDD is an asynchronous actor model system for Python with a number of
+curious ideas.
+
+:: 
+
+  FROM THE DARKNESS, OLD GODS AROSE TO
+    BRING NEW ORDER TO THE WORLD.
+    BEHOLD, ALL SHALL SUBMIT TO...
+ 
+    .-   .-   -. ..  .. .---.  .---.     -.
+    \ \  \ \ / // |  | \| .- \ | .- \   / /
+  /\ \ \  \ ' / | |  | || | \ || | \ | / / /\
+  \/ /_/  / . \ \ \__/ /| |_/ .| |_/ . \_\ \/
+         \_/ \_/ '____' '.___/ '.___/
+            _                __              
+          /  .        ___   /  \
+         / /o \    .-'   './ /o\_
+        /.- \o \.-/ oooo--o\/ /  \
+             \O/  \  .-----.\/ /o\\
+             /' /\ \  ^^^^^   / \o\\
+            / ./\o          _/   \o\\
+           / /   '---______/      \_\'
+           '                        '
+
+:: 
+
+  "I have seen the future... and the future is XUDD!"
+    -- Acolyte of the Cult of XUDD
+  
+  "The greatest threat to our children since Dungeons and Dragons."
+    -- Somebody's Relative
+  
+  "It's an asyncronous actor model system for Python... I don't
+   understand what this has to do with chaotic deities, or why it's
+   called XUDD."
+    -- Someone reading this document
 
 .. toctree::
    :maxdepth: 2
-
 
 
 Indices and tables
