@@ -39,6 +39,8 @@ XUDD is an asynchronous actor model system with several aims:
 This is all fairly ambitious stuff.  If you're interested in helping,
 we'd love you to join our community!  Join #xudd on irc.freenode.net.
 
+You can find our code at: https://github.com/cwebber/xudd/
+
 :: 
 
   "I have seen the future... and the future is XUDD!"
