@@ -6,9 +6,6 @@
 XUDD: An Asynchronous Actor Model System for Python
 ===================================================
 
-XUDD is an asynchronous actor model system for Python with a number of
-curious ideas.
-
 :: 
 
   FROM THE DARKNESS, OLD GODS AROSE TO
@@ -29,6 +26,17 @@ curious ideas.
             / ./\o          _/   \o\\
            / /   '---______/      \_\'
            '                        '
+
+XUDD is an asynchronous actor model system with several aims:
+ - Easy to write asynchronous code.  Uses coroutines to make async
+   code clear and easy to read.
+ - Actors make writing clean, modular code easy.  Resource allocation
+   without locking by deferring resource controls to various actors.
+ - Future goals of easy task load balancing, spreading tasks across
+   multiple processes and machines easily.
+
+This is all fairly ambitious stuff.  If you're interested in helping,
+we'd love you to join our community!  Join #xudd on irc.freenode.net.
 
 :: 
 
