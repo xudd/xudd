@@ -128,4 +128,6 @@ alternatives, and deployability of alternatives, especially one that
 supports proper federation and an issue tracker.  (Maybe one could be
 built with XUDD?)
 
-That's a separate conversation, but I'm interested in having it.
+The official XUDD policy is: as soon as a nice git hosting system
+exists that supports federation (probably via the Pump API?) and has
+an issue tracker, we'll switch to it.
