@@ -1,0 +1,21 @@
+# Top-level files and directories
+/dist/
+/bin/
+/develop-eggs/
+/build/
+/eggs/
+/lib/
+/local/
+/include/
+/parts/
+/share/
+/xudd.egg-info
+/docs/_build/
+/docs/build
+/user_dev/
+
+# File extensions
+*.pyc
+*.pyo
+*~
+*.swp
