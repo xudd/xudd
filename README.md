@@ -39,7 +39,8 @@ XUDD: A Python Actor Model System
 Join the cult of XUDD
 ---------------------
 
-We're on IRC: #xudd on irc.freenode.net
+ - Read our docs: https://xudd.readthedocs.org/en/latest/
+ - We're on IRC: #xudd on irc.freenode.net
 
 
 The short of it
