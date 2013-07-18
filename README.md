@@ -128,4 +128,4 @@ alternatives, and deployability of alternatives, especially one that
 supports proper federation and an issue tracker.  (Maybe one could be
 built with XUDD?)
 
-That's a separate conversation though.
+That's a separate conversation, but I'm interested in having it.
