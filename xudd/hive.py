@@ -167,6 +167,9 @@ class Hive(Thread):
     def gen_message_queue(self):
         return ActorMessageQueue()
 
+    def gen_proxy(self):
+        return HiveProxy(self)
+
     def workloop(self):
         # ... should we convert the hive to an actor that processes
         # its own messages? ;)
