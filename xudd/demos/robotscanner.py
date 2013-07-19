@@ -167,7 +167,7 @@ class Droid(Actor):
                 "alive": alive})
 
         if not alive:
-            self.hive.remove(self.id)
+            self.hive.remove_actor(self.id)
 
 
 ALIVE_FORMAT = "Droid %s shot; taken %s damage. Still alive... %s hp left."
