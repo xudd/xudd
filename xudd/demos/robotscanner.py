@@ -279,12 +279,12 @@ def main():
     hive = Hive()
 
     # Add overseer, who populates the world and reports things
-    Overseer(hive, id="overseer")
+    Overseer(hive.gen_proxy(), id="overseer")
     hive.send_message(
         to="overseer",
         directive="init_world")
 
-    hive.workloop()
+    hive.run()
 
 
 if __name__ == "__main__":
