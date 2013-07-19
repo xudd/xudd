@@ -222,3 +222,5 @@ class HiveProxy(object):
     def gen_message_queue(self, *args, **kwargs):
         self.__hive.gen_message_queue(*args, **kwargs)
 
+    def remove_actor(self, *args, **kwargs):
+        self.__hive.remove_actor(*args, **kwargs)
