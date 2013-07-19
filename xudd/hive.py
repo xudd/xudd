@@ -1,6 +1,5 @@
 from threading import Thread, Lock
 
-
 try:
     from queue import Queue, Empty
 except ImportError:
@@ -12,6 +11,13 @@ class ActorWrapper(object):
         self.actor = actor
         self.message_queue = Queue()
         self.message_lock = Lock()
+
+
+class ActorQueue(object):
+    def __init__(self):
+        self.queue = Queue()
+        self.actors_in_queue = set()
+        self.actors_in_queue_lock = Lock()
 
 
 class HiveWorker(Thread):
@@ -34,6 +40,9 @@ class HiveWorker(Thread):
         while not self.should_stop:
             self.process_actor()
 
+    def stop(self):
+        self.should_stop = True
+
     def process_actor(self):
         """
         Take an actor off the queue and process its messages... if
@@ -42,7 +51,7 @@ class HiveWorker(Thread):
         # Get an actor from the actor queue
         # 
         try:
-            wrapped_actor = self.actor_queue.get(
+            wrapped_actor = self.actor_queue.queue.get(
                 block=True, timeout=self.wait_timeout)
         except Empty:
             # We didn't do anything this round, oh well
@@ -69,19 +78,26 @@ class HiveWorker(Thread):
         # Put the actor back on the queue, if appropriate
         # --- lock during this to avoid race condition of actor ---
         #     with messages not appearing on actor_queue
-        with wrapped_actor.message_lock:
+        #
+        #     Lock both:
+        #      - the actor's message queue
+        #      - the actors_in_queue lock
+        with wrapped_actor.message_lock, self.actor_queue.actors_in_queue_lock:
             if not wrapped_actor.message_queue.empty():
-                self.actor_queue.put(wrapped_actor)
+                self.actor_queue.queue.put(wrapped_actor)
+            else:
+                self.actor_queue.actors_in_queue.pop(wrapped_actor)
 
 
 class Hive(object):
     def __init__(self, num_workers=5):
         # NO locking on this presently, though maybe we should?
         # At the very least, one *should not* iterate through this dictionary
+        # ... wouldn't be hard to set up a lock if we need it
         self.__actor_registry = {}
 
-        # Message queue
-        self.__actor_queue = Queue()
+        # Actor queue
+        self.__actor_queue = ActorQueue()
 
         self.__workers = []
         self.__init_workers()
@@ -112,6 +128,10 @@ class Hive(object):
     def queue_message(self, message):
         # --- lock during this to avoid race condition of actor ---
         #     with messages not appearing on actor_queue
+        #
+        #     Lock both:
+        #      - the actor's message queue
+        #      - the actors_in_queue lock
         pass
 
     def workloop(self):
