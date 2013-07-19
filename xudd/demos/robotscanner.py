@@ -228,6 +228,7 @@ class SecurityRobot(Actor):
                         directive="transmission",
                         body={
                             "message": transmission})
+                    continue
 
                 # Let the overseer know we found an infected droid
                 # and are engaging
