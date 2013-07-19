@@ -6,34 +6,12 @@ except ImportError:
     from Queue import Queue, Empty
 
 
-class ActorWrapper(object):
-    """
-    Wrapper object for an actor as well as the messages it currently needs to
-    process.
-    """
-    def __init__(self, actor):
-        self.actor = actor
-        self.message_queue = Queue()
-        self.message_lock = Lock()
-
-
-class ActorQueue(object):
-    """
-    Wrapper object handling the queue of actors that currently have messages to
-    be processed.
-    """
-    def __init__(self):
-        self.queue = Queue()
-        self.actors_in_queue = set()
-        self.actors_in_queue_lock = Lock()
-
-
 class HiveWorker(Thread):
     """
     A worker thread that gives life to actors, allowing them to process
     messages.
     """
-    def __init__(self, actor_queue, max_messages=5, wait_timeout=1):
+    def __init__(self, hive, actor_queue, max_messages=5, wait_timeout=1):
         """
         Args:
          - actor_queue: queue of actors to be processed at present
@@ -43,10 +21,12 @@ class HiveWorker(Thread):
            useful)
         """
         super(HiveWorker, self).__init__(self)
-        self.should_stop = False
+        self.hive = hive
         self.actor_queue = actor_queue
         self.wait_timeout = wait_timeout
         self.max_messages = max_messages
+
+        self.should_stop = False
 
     def run(self):
         while not self.should_stop:
@@ -63,7 +43,7 @@ class HiveWorker(Thread):
         # Get an actor from the actor queue
         # 
         try:
-            wrapped_actor = self.actor_queue.queue.get(
+            actor = self.actor_queue.get(
                 block=True, timeout=self.wait_timeout)
         except Empty:
             # We didn't do anything this round, oh well
@@ -76,32 +56,22 @@ class HiveWorker(Thread):
             # Get a message off the message queue
             # (I don't think we need to lock while pulling one off the stack,
             #  but doesn't hurt?)
-            with wrapped_actor.message_lock:
+            with actor.message_queue.lock:
                 try:
-                    message = wrapped_actor.message_queue.get(block=False)
+                    message = actor.message_queue.queue.get(block=False)
                 except Empty:
                     # No messages on the queue anyway, might as well break out
                     # from this
                     break
 
-            wrapped_actor.actor.handle_message(message)
+            actor.handle_message(message)
             messages_processed += 1
 
-        # Put the actor back on the queue, if appropriate
-        # --- lock during this to avoid race condition of actor ---
-        #     with messages not appearing on actor_queue
-        #
-        #     Lock both:
-        #      - the actor's message queue
-        #      - the actors_in_queue lock
-        with wrapped_actor.message_lock, self.actor_queue.actors_in_queue_lock:
-            if not wrapped_actor.message_queue.empty():
-                self.actor_queue.queue.put(wrapped_actor)
-            else:
-                self.actor_queue.actors_in_queue.pop(wrapped_actor)
+        # Request checking if actor should be requeued with hive
+        self.hive.request_possibly_requeue_actor(actor)
 
 
-class Hive(object):
+class Hive(Thread):
     """
     Hive handles all actors and the passing of messages between them.
 
@@ -114,10 +84,17 @@ class Hive(object):
         self.__actor_registry = {}
 
         # Actor queue
-        self.__actor_queue = ActorQueue()
+        self.__actor_queue = Queue()
+        self.__actors_in_queue = set()
 
         self.num_workers = num_workers
         self.__workers = []
+
+        # This is actions for ourself to take, such as checking if an
+        # actor should be re-queued, and queueing messages to an actor
+        self.hive_action_queue = Queue()
+
+        self.should_stop = False
 
     def __init_and_start_workers(self):
         for i in range(self.num_workers):
@@ -140,12 +117,16 @@ class Hive(object):
         """
         pass
 
+    def request_possibly_requeue_actor(self, actor):
+        self.action_queue.put(
+            ("check_queue_actor", actor))
+
     def queue_message(self, message):
         """
         Queue a message to its appropriate actor.
         """
         try:
-            wrapped_actor = self.__actor_registry[message.to]
+            actor = self.__actor_registry[message.to]
         except KeyError:
             # TODO:
             #   In the future, if this fails, we should send a message back to
@@ -157,22 +138,56 @@ class Hive(object):
         
         # --- lock during this to avoid race condition of actor ---
         #     with messages not appearing on actor_queue
-        #
-        #     Lock both:
-        #      - the actor's message queue
-        #      - the actors_in_queue lock
-        with wrapped_actor.message_lock, self.actor_queue.actors_in_queue_lock:
-            wrapped_actor.message_queue.put(message)
+        with actor.message_queue.lock:
+            actor.message_queue.queue.put(message)
             # Add the wrapped actor, if it's not in that set already
-            self.actors_in_queue.add(wrapped_actor)
+            self.queue_actor(actor)
 
     def run(self):
         self.__init_and_start_workers()
         self.workloop()
 
+    def queue_actor(self, actor):
+        """
+        Queue an actor... it's got messages to be processed!
+        """
+        self.__actor_queue.queue.put(actor)
+        self.__actors_in_queue.add(actor)
+
     def workloop(self):
+        # ... should we convert the hive to an actor that processes
+        # its own messages? ;)
+
         # Process actions
-        pass
+        while not self.should_stop:
+            action = self.hive_action_queue.get(
+                block=True, timeout=1)
+            action_type = action[0]
+
+            # The actor just had their stuff processed... see if they
+            # should be put back on the actor queue
+            if action_type == "check_queue_actor":
+                actor = action[1]
+                with actor.message_queue.lock:
+                    # Should we requeue?
+                    if actor.message_queue.queue.empty():
+                        # apparently not, remove the actor from the
+                        # "actors in queue" set
+                        self.actor_queue.actors_in_queue.pop(actor)
+                    else:
+                        # Looks like so!
+                        self.queue_actor(actor)
+
+            elif action_type == "queue_message":
+                message = action[1]
+                self.queue_message(message)
+
+            else:
+                raise UnknownHiveAction(
+                    "Unknown action: %s" % action_type)
+
+
+class UnknownHiveAction(Exception): pass
 
 
 class HiveProxy(object):
