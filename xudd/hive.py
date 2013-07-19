@@ -7,6 +7,10 @@ except ImportError:
 
 
 class ActorWrapper(object):
+    """
+    Wrapper object for an actor as well as the messages it currently needs to
+    process.
+    """
     def __init__(self, actor):
         self.actor = actor
         self.message_queue = Queue()
@@ -14,6 +18,10 @@ class ActorWrapper(object):
 
 
 class ActorQueue(object):
+    """
+    Wrapper object handling the queue of actors that currently have messages to
+    be processed.
+    """
     def __init__(self):
         self.queue = Queue()
         self.actors_in_queue = set()
@@ -21,6 +29,10 @@ class ActorQueue(object):
 
 
 class HiveWorker(Thread):
+    """
+    A worker thread that gives life to actors, allowing them to process
+    messages.
+    """
     def __init__(self, actor_queue, max_messages=5, wait_timeout=1):
         """
         Args:
@@ -90,6 +102,11 @@ class HiveWorker(Thread):
 
 
 class Hive(object):
+    """
+    Hive handles all actors and the passing of messages between them.
+
+    Inter-hive communication may exist in the future, it doesn't yet ;)
+    """
     def __init__(self, num_workers=5):
         # NO locking on this presently, though maybe we should?
         # At the very least, one *should not* iterate through this dictionary
