@@ -6,6 +6,16 @@ except ImportError:
     from Queue import Queue, Empty
 
 
+class ActorMessageQueue(object):
+    """
+    The "message_queue" object (technically a queue and a lock)
+    that actors get with this hive pattern.
+    """
+    def __init__(self):
+        self.queue = Queue()
+        self.lock = Lock()
+
+
 class HiveWorker(Thread):
     """
     A worker thread that gives life to actors, allowing them to process
@@ -103,10 +113,10 @@ class Hive(Thread):
             worker.start()
 
     def register_actor(self, actor):
-        pass
+        self.__actor_registry[actor.id] = actor
 
     def remove_actor(self, actor_id):
-        pass
+        self.__actor_registry.pop(actor_id)
 
     def send_message(self, message_things_here):
         """
@@ -153,6 +163,9 @@ class Hive(Thread):
         """
         self.__actor_queue.queue.put(actor)
         self.__actors_in_queue.add(actor)
+
+    def gen_message_queue(self):
+        return ActorMessageQueue()
 
     def workloop(self):
         # ... should we convert the hive to an actor that processes
