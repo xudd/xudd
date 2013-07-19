@@ -126,13 +126,30 @@ class Hive(object):
         pass
 
     def queue_message(self, message):
+        """
+        Queue a message to its appropriate actor.
+        """
+        try:
+            wrapped_actor = self.__actor_registry[message.to]
+        except KeyError:
+            # TODO:
+            #   In the future, if this fails, we should send a message back to
+            #   the original sender informing them of such
+            print (
+                "Wouldn't it be nice if we handled sending "
+                "messages to an actor that didn't exist more gracefully?")
+            return False
+        
         # --- lock during this to avoid race condition of actor ---
         #     with messages not appearing on actor_queue
         #
         #     Lock both:
         #      - the actor's message queue
         #      - the actors_in_queue lock
-        pass
+        with wrapped_actor.message_lock, self.actor_queue.actors_in_queue_lock:
+            wrapped_actor.message_queue.put(message)
+            # Add the wrapped actor, if it's not in that set already
+            self.actors_in_queue.add(wrapped_actor)
 
     def workloop(self):
         pass
