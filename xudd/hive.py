@@ -116,16 +116,14 @@ class Hive(object):
         # Actor queue
         self.__actor_queue = ActorQueue()
 
+        self.num_workers = num_workers
         self.__workers = []
-        self.__init_workers()
 
-    def __init_workers(self):
-        for i in range(num_workers):
-            pass
-
-    def start_workers(self):
-        for worker in self.__workers:
-            worker.run()
+    def __init_and_start_workers(self):
+        for i in range(self.num_workers):
+            worker = HiveWorker()
+            self.__workers.append(worker)
+            worker.start()
 
     def register_actor(self, actor):
         pass
@@ -168,11 +166,31 @@ class Hive(object):
             # Add the wrapped actor, if it's not in that set already
             self.actors_in_queue.add(wrapped_actor)
 
+    def run(self):
+        self.__init_and_start_workers()
+        self.workloop()
+
     def workloop(self):
+        # Process actions
         pass
 
 
 class HiveProxy(object):
-    def __init__(self, actor, hive):
-        self.__actor = actor
+    """
+    Proxy to the Hive.
+
+    Doesn't expose the entire hive because that could result in
+    actors playing with things they shouldn't. :)
+    """
+    def __init__(self, hive):
         self.__hive = hive
+
+    def register_actor(self, *args, **kwargs):
+        self.__hive.register_actor(*args, **kwargs)
+
+    def send_message(self, *args, **kwargs):
+        self.__hive.send_message(*args, **kwargs)
+
+    def gen_message_queue(self, *args, **kwargs):
+        self.__hive.gen_message_queue(*args, **kwargs)
+
