@@ -39,10 +39,9 @@ class Overseer(Actor):
     def __init__(self, *args, **kwargs):
         super(Overseer, self).__init__(self, *args, **kwargs)
 
-        self.message_routing.extend(
+        self.message_routing.update(
             {"init_world": self.init_world,
-             "transmission": self.transmission,
-             "compile_and_shutdown": self.compile_and_shutdown})
+             "transmission": self.transmission})
 
     def init_world(self):
         """
