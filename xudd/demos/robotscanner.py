@@ -43,7 +43,7 @@ class Overseer(Actor):
             {"init_world": self.init_world,
              "transmission": self.transmission})
 
-    def init_world(self):
+    def init_world(self, message):
         """
         Initialize the world we're operating in for this demo.
         """
