@@ -37,7 +37,7 @@ class Overseer(Actor):
     and sends information about what's going on back to the user.
     """
     def __init__(self, *args, **kwargs):
-        super(Overseer, self).__init__(self, *args, **kwargs)
+        super(Overseer, self).__init__(*args, **kwargs)
 
         self.message_routing.update(
             {"init_world": self.init_world,

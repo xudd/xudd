@@ -1,6 +1,6 @@
 import uuid
 from threading import Thread, Lock
-from itertools import counter
+from itertools import count
 
 try:
     from queue import Queue, Empty
@@ -34,7 +34,7 @@ class HiveWorker(Thread):
            message before we give up (this way we can still stop if
            useful)
         """
-        super(HiveWorker, self).__init__(self)
+        super(HiveWorker, self).__init__()
         self.hive = hive
         self.actor_queue = actor_queue
         self.wait_timeout = wait_timeout
@@ -112,11 +112,11 @@ class Hive(Thread):
 
         # Objects related to generating unique ids for messages
         self.message_uuid = uuid.uuid4()
-        self.message_counter = counter()
+        self.message_counter = count()
 
     def __init_and_start_workers(self):
         for i in range(self.num_workers):
-            worker = HiveWorker()
+            worker = HiveWorker(self, self.__actor_queue)
             self.__workers.append(worker)
             worker.start()
 
@@ -139,12 +139,12 @@ class Hive(Thread):
         message = Message(
             to=to, directive=to, from_id=from_id, body=body,
             in_reply_to=in_reply_to, id=message_id)
-        self.action_queue.put(
+        self.hive_action_queue.put(
             ("queue_message", message))
         return message_id
 
     def request_possibly_requeue_actor(self, actor):
-        self.action_queue.put(
+        self.hive_action_queue.put(
             ("check_queue_actor", actor))
 
     def queue_message(self, message):
@@ -192,8 +192,12 @@ class Hive(Thread):
 
         # Process actions
         while not self.should_stop:
-            action = self.hive_action_queue.get(
-                block=True, timeout=1)
+            try:
+                action = self.hive_action_queue.get(
+                    block=True, timeout=1)
+            except Empty:
+                continue
+
             action_type = action[0]
 
             # The actor just had their stuff processed... see if they
@@ -233,7 +237,7 @@ class Hive(Thread):
         """
         # This method should be thread safe, I think, without need for a lock:
         #   http://29a.ch/2009/2/20/atomic-get-and-increment-in-python
-        return u"%s:%s" % (self.message_uuid, counter.next())
+        return u"%s:%s" % (self.message_uuid, self.message_counter.next())
 
     def create_actor(self, actor_class, *args, **kwargs):
         hive_proxy = self.gen_proxy()
