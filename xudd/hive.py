@@ -1,9 +1,13 @@
+import uuid
 from threading import Thread, Lock
+from itertools import counter
 
 try:
     from queue import Queue, Empty
 except ImportError:
     from Queue import Queue, Empty
+
+from xudd.message import Message
 
 
 class ActorMessageQueue(object):
@@ -106,6 +110,10 @@ class Hive(Thread):
 
         self.should_stop = False
 
+        # Objects related to generating unique ids for messages
+        self.message_uuid = uuid.uuid4()
+        self.message_counter = counter()
+
     def __init_and_start_workers(self):
         for i in range(self.num_workers):
             worker = HiveWorker()
@@ -202,6 +210,32 @@ class Hive(Thread):
                 raise UnknownHiveAction(
                     "Unknown action: %s" % action_type)
 
+    def gen_actor_id(self):
+        """
+        Generate an actor id.
+        """
+        return uuid.uuid4()
+
+    def gen_message_id(self):
+        """
+        Generate a unique message id.
+
+        Since uuid4s take a bit of time to compose, instead we keep a
+        local counter combined with our hive's counter-uuid.
+        """
+        # This method should be thread safe, I think, without need for a lock:
+        #   http://29a.ch/2009/2/20/atomic-get-and-increment-in-python
+        return u"%s:%s" % (self.message_uuid, counter.next())
+
+    def create_actor(self, actor_class, *args, **kwargs):
+        hive_proxy = self.gen_proxy()
+        actor_id = kwargs.get("id") or self.gen_actor_id()
+
+        actor = actor_class(
+            hive_proxy, actor_id, *args, **kwargs)
+
+        return actor_id
+
 
 class UnknownHiveAction(Exception): pass
 
@@ -215,15 +249,22 @@ class HiveProxy(object):
     """
     def __init__(self, hive):
         self.__hive = hive
+        self.__actor = None
 
-    def register_actor(self, *args, **kwargs):
-        self.__hive.register_actor(*args, **kwargs)
+    def associate_with_actor(self, actor):
+        """
+        Associate an actor with ourselves
+        """
+        self.__actor = actor
 
     def send_message(self, *args, **kwargs):
-        self.__hive.send_message(*args, **kwargs)
+        return self.__hive.send_message(*args, **kwargs)
 
     def gen_message_queue(self, *args, **kwargs):
-        self.__hive.gen_message_queue(*args, **kwargs)
+        return self.__hive.gen_message_queue(*args, **kwargs)
 
     def remove_actor(self, *args, **kwargs):
-        self.__hive.remove_actor(*args, **kwargs)
+        return self.__hive.remove_actor(*args, **kwargs)
+
+    def create_actor(self, actor_class, *args, **kwargs):
+        return self.__hive.create_actor(actor_class, *args, **kwargs)

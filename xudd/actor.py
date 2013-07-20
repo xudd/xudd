@@ -1,13 +1,12 @@
-import uuid
 from types import GeneratorType
 
 class Actor(object):
     """
     Basic XUDD actor.
     """
-    def __init__(self, hive, id=None):
+    def __init__(self, hive, id):
         self.hive = hive
-        self.id = id or uuid.uuid4()
+        self.id = id
 
         # Actors SHOULD NOT TOUCH their own message queue, generally.
         # Let a worker thread do it.
