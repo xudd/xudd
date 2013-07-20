@@ -36,7 +36,7 @@ class Actor(object):
 
             # Send this message reply to this coroutine
             try:
-                _log.debug('Sending reply {0}'.format(message.to_dict()))
+                _log.debug('Sending reply {0}'.format(message))
                 message_id = coroutine.send(message)
             except StopIteration:
                 # And our job is done
@@ -64,6 +64,9 @@ class Actor(object):
             # ... yes this is the same code as above
             self._waiting_coroutines[message_id] = coroutine
             return
+
+    def send_message(self, *args, **kwargs):
+        return self.hive.send_message(*args, **kwargs)
 
     def wait_on_message(self, to, directive, from_id=None,
                         id=None, body=None, in_reply_to=None):

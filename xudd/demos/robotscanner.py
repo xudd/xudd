@@ -131,15 +131,26 @@ class WarehouseRoom(Actor):
         self.previous_room = message.body['id']
 
     def get_next_room(self, message):
-        message.reply(
+        self.send_message(
+            to=message.from_id,
+            directive=message.directive,
+            in_reply_to=message.id,
+            from_id=self.id,
             body={"id": self.next_room})
 
     def get_previous_room(self, message):
-        message.reply(
+        self.send_message(
+            to=message.from_id,
+            directive=message.directive,
+            in_reply_to=message.id,
+            from_id=self.id,
             body={"id": self.previous_room})
 
     def list_droids(self, message):
-        message.reply(
+        self.send_message(
+            to=message.from_id,
+            directive=message.directive,
+            in_reply_to=message.id,
             body={"droid_ids": self.droids})
 
     def register_droid(self, message):
@@ -174,10 +185,20 @@ class Droid(Actor):
             to=self.room,
             directive="register_droid",
             body={"droid_id": self.id})
+
+        self.send_message(
+            to=message.from_id,
+            directive="reply",
+            in_reply_to=message.id)
+
         _log.debug('Registered droid {0}!'.format(self.id))
 
     def infection_expose(self, message):
-        message.reply(
+        self.send_message(
+            to=message.from_id,
+            directive=message.directive,
+            from_id=self.id,
+            in_reply_to=message.id,
             body={"is_infected": self.infected})
 
     def get_shot(self, message):
@@ -185,7 +206,11 @@ class Droid(Actor):
         self.hp -= damage
         alive = self.hp > 0
 
-        message.reply(
+        self.send_message(
+            to=message.from_id,
+            in_reply_to=message.id,
+            directive=message.directive,
+            from_id=self.id,
             body={
                 "hp_left": self.hp,
                 "damage_taken": damage,
@@ -274,12 +299,14 @@ class SecurityRobot(Actor):
 
                     # Relay the droid status
                     droid_status = self.__droid_status_format(response)
+
                     self.hive.send_message(
                         to="overseer",
                         directive="transmission",
                         body={
                             "message": droid_status})
-                    infected_droid_alive = droid_status.body["alive"]
+
+                    infected_droid_alive = response.body["alive"]
 
             # switch to next room, if there is one
             response = yield self.wait_on_message(
