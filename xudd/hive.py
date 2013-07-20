@@ -207,7 +207,10 @@ class Hive(Thread):
         # Process actions
         while not self.should_stop:
             try:
-                action = self.hive_action_queue.get(block=True, timeout=1)
+                if PY2:
+                    action = self.hive_action_queue.get(block=False)
+                else:
+                    action = self.hive_action_queue.get(block=True, timeout=1)
             except Empty:
                 continue
 
