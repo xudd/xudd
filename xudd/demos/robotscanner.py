@@ -24,7 +24,6 @@ from xudd.actor import Actor
 
 _log = logging.getLogger(__name__)
 
-
 # List of room tuples of (clean_droids, infected_droids)
 
 ROOM_STRUCTURE = [
@@ -325,7 +324,7 @@ class SecurityRobot(Actor):
             directive="transmission",
             body={
                 "message": "Mission accomplished."})
-        self.hive.send_shutdown()
+        # self.hive.send_shutdown()
 
 
 def main():
@@ -334,7 +333,7 @@ def main():
     logging.getLogger().setLevel(logging.DEBUG)
 
     # Invoke the destruction deity
-    hive = Hive()
+    hive = Hive(num_workers=5)
 
     # Add overseer, who populates the world and reports things
     hive.create_actor(Overseer, id="overseer")

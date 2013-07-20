@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import uuid
 from threading import Thread, Lock
 from itertools import count
@@ -25,19 +27,15 @@ class HiveWorker(Thread):
     A worker thread that gives life to actors, allowing them to process
     messages.
     """
-    def __init__(self, hive, actor_queue, max_messages=5, wait_timeout=1):
+    def __init__(self, hive, actor_queue, max_messages=5):
         """
         Args:
          - actor_queue: queue of actors to be processed at present
          - max_messages: maximum number of messages to process per actor
-         - wait_timeout: amount of time to block without getting a
-           message before we give up (this way we can still stop if
-           useful)
         """
         Thread.__init__(self)
         self.hive = hive
         self.actor_queue = actor_queue
-        self.wait_timeout = wait_timeout
         self.max_messages = max_messages
 
         self.should_stop = False
@@ -57,8 +55,7 @@ class HiveWorker(Thread):
         # Get an actor from the actor queue
         #
         try:
-            actor = self.actor_queue.get(
-                block=True, timeout=self.wait_timeout)
+            actor = self.actor_queue.get(block=False)
         except Empty:
             # We didn't do anything this round, oh well
             return False
@@ -159,7 +156,7 @@ class Hive(Thread):
             # TODO:
             #   In the future, if this fails, we should send a message back to
             #   the original sender informing them of such
-            print (
+            print(
                 "Wouldn't it be nice if we handled sending "
                 "messages to an actor that didn't exist more gracefully?")
             return False
@@ -199,8 +196,7 @@ class Hive(Thread):
         # Process actions
         while not self.should_stop:
             try:
-                action = self.hive_action_queue.get(
-                    block=True, timeout=1)
+                action = self.hive_action_queue.get(block=False)
             except Empty:
                 continue
 
