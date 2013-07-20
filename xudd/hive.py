@@ -55,7 +55,7 @@ class HiveWorker(Thread):
         there's anything to process
         """
         # Get an actor from the actor queue
-        # 
+        #
         try:
             actor = self.actor_queue.get(
                 block=True, timeout=self.wait_timeout)
@@ -92,7 +92,7 @@ class Hive(Thread):
     Inter-hive communication may exist in the future, it doesn't yet ;)
     """
     def __init__(self, num_workers=5):
-        Thread.__init__(self)
+        super(Hive, self).__init__()
 
         # NO locking on this presently, though maybe we should?
         # At the very least, one *should not* iterate through this dictionary
@@ -163,7 +163,7 @@ class Hive(Thread):
                 "Wouldn't it be nice if we handled sending "
                 "messages to an actor that didn't exist more gracefully?")
             return False
-        
+
         # --- lock during this to avoid race condition of actor ---
         #     with messages not appearing on actor_queue
         with actor.message_queue.lock:
@@ -228,11 +228,11 @@ class Hive(Thread):
         for worker in self.__workers:
             worker.should_stop = True
 
-    def gen_actor_id(self):
+    def gen_actor_id(self, cls):
         """
         Generate an actor id.
         """
-        return unicode(uuid.uuid4())
+        return u"%s-%s" % (unicode(cls.__name__), unicode(uuid.uuid4()))
 
     def gen_message_id(self):
         """
@@ -247,7 +247,7 @@ class Hive(Thread):
 
     def create_actor(self, actor_class, *args, **kwargs):
         hive_proxy = self.gen_proxy()
-        actor_id = kwargs.pop("id", None) or self.gen_actor_id()
+        actor_id = kwargs.pop("id", None) or self.gen_actor_id(actor_class)
 
         actor = actor_class(
             hive_proxy, actor_id, *args, **kwargs)
