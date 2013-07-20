@@ -228,7 +228,7 @@ class Hive(Thread):
         """
         Generate an actor id.
         """
-        return u"%s-%s" % (unicode(cls.__name__), unicode(uuid.uuid4()))
+        return unicode(uuid.uuid4())
 
     def gen_message_id(self):
         """
