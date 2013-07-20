@@ -32,14 +32,13 @@ class Actor(object):
 
             # Send this message reply to this coroutine
             try:
-                message_to_send = coroutine.send(message)
+                message_id = coroutine.send(message)
             except StopIteration:
                 # And our job is done
                 return
 
-            # since the coroutine returned a message to be yielded, we
-            # should both add this message's id to the registry
-            message_id = self.hive.send_message(message_to_send)
+            # since the coroutine returned a message_id that was sent,
+            # we should both add this message's id to the registry
             self._waiting_coroutines[message_id] = coroutine
             return
 
@@ -53,12 +52,11 @@ class Actor(object):
         # results into the coroutine registry
         if isinstance(result, GeneratorType):
             coroutine = result
-            message_to_send = result.send(None)
+            message_id = result.send(None)
 
-            # since the coroutine returned a message to be yielded, we
-            # should both add this message's id to the registry
+            # since the coroutine returned a message_id that was sent,
+            # we should both add this message's id to the registry
             # ... yes this is the same code as above
-            message_id = self.hive.send_message(message_to_send)
             self._waiting_coroutines[message_id] = coroutine
             return
 
