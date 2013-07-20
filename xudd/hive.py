@@ -126,14 +126,22 @@ class Hive(Thread):
     def remove_actor(self, actor_id):
         self.__actor_registry.pop(actor_id)
 
-    def send_message(self, message_things_here):
+    def send_message(self, to, directive,
+                     from_id=None,
+                     body=None, in_reply_to=None, id=None):
         """
         API for sending a message to an actor.
 
         Note, not the same as queueing a message which is a more low-level
         action.  This also constructs a proper Message object.
         """
-        pass
+        message_id = id or self.gen_message_id()
+        message = Message(
+            to=to, directive=to, from_id=from_id, body=body,
+            in_reply_to=in_reply_to, id=message_id)
+        self.action_queue.put(
+            ("queue_message", message))
+        return message_id
 
     def request_possibly_requeue_actor(self, actor):
         self.action_queue.put(
@@ -257,8 +265,13 @@ class HiveProxy(object):
         """
         self.__actor = actor
 
-    def send_message(self, *args, **kwargs):
-        return self.__hive.send_message(*args, **kwargs)
+    def send_message(self, to, directive,
+                     from_id=None,
+                     body=None, in_reply_to=None, id=None):
+        from_id = from_id or self.__actor.id
+        return self.__hive.send_message(
+            to=to, directive=directive, from_id=from_id, body=body,
+            in_reply_to=in_reply_to, id=id)
 
     def gen_message_queue(self, *args, **kwargs):
         return self.__hive.gen_message_queue(*args, **kwargs)
