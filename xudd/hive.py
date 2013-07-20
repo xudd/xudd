@@ -173,8 +173,13 @@ class Hive(Thread):
             self.queue_actor(actor)
 
     def run(self):
-        self.__init_and_start_workers()
-        self.workloop()
+        try:
+            self.__init_and_start_workers()
+            self.workloop()
+        except:
+            raise
+        finally:
+            self.stop_workers()
 
     def queue_actor(self, actor):
         """
@@ -224,8 +229,6 @@ class Hive(Thread):
             else:
                 raise UnknownHiveAction(
                     "Unknown action: %s" % action_type)
-
-        self.stop_workers()
 
     def stop_workers(self):
         for worker in self.__workers:

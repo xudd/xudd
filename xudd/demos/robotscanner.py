@@ -294,10 +294,7 @@ def main():
         to="overseer",
         directive="init_world")
 
-    try:
-        hive.run()
-    except KeyboardInterrupt:
-        hive.stop_workers()
+    hive.run()
 
 
 if __name__ == "__main__":
