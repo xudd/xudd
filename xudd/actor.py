@@ -26,9 +26,9 @@ class Actor(object):
         """
         # If this message is continuing a coroutine-in-waiting, we'll
         # handle that.
-        if message.reply_to is not None \
-           and message.reply_to in self._waiting_coroutines:
-            coroutine = self._waiting_coroutines.pop(message.reply_to)
+        if message.in_reply_to is not None \
+           and message.in_reply_to in self._waiting_coroutines:
+            coroutine = self._waiting_coroutines.pop(message.in_reply_to)
 
             # Send this message reply to this coroutine
             try:
@@ -45,7 +45,7 @@ class Actor(object):
 
         # Otherwise, this is a new message to handle.
         # TODO: send back a warning message if this is an unhandled directive?
-        message_handler = self.message_routing[message["directive"]]
+        message_handler = self.message_routing[message.directive]
 
         result = message_handler(message)
 

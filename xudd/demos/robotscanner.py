@@ -37,7 +37,7 @@ class Overseer(Actor):
     and sends information about what's going on back to the user.
     """
     def __init__(self, *args, **kwargs):
-        super(Overseer, self).__init__(*args, **kwargs)
+        Actor.__init__(self, *args, **kwargs)
 
         self.message_routing.update(
             {"init_world": self.init_world,
@@ -47,6 +47,9 @@ class Overseer(Actor):
         """
         Initialize the world we're operating in for this demo.
         """
+        # DEBUG
+        print_function("beware I live!")
+
         # Add rooms and droids
         last_room = None
         first_room = None
@@ -279,7 +282,7 @@ def main():
     hive = Hive()
 
     # Add overseer, who populates the world and reports things
-    Overseer(hive.gen_proxy(), id="overseer")
+    hive.create_actor(Overseer, id="overseer")
     hive.send_message(
         to="overseer",
         directive="init_world")

@@ -34,7 +34,7 @@ class HiveWorker(Thread):
            message before we give up (this way we can still stop if
            useful)
         """
-        super(HiveWorker, self).__init__()
+        Thread.__init__(self)
         self.hive = hive
         self.actor_queue = actor_queue
         self.wait_timeout = wait_timeout
@@ -92,6 +92,8 @@ class Hive(Thread):
     Inter-hive communication may exist in the future, it doesn't yet ;)
     """
     def __init__(self, num_workers=5):
+        Thread.__init__(self)
+
         # NO locking on this presently, though maybe we should?
         # At the very least, one *should not* iterate through this dictionary
         # ... wouldn't be hard to set up a lock if we need it
@@ -177,7 +179,7 @@ class Hive(Thread):
         """
         Queue an actor... it's got messages to be processed!
         """
-        self.__actor_queue.queue.put(actor)
+        self.__actor_queue.put(actor)
         self.__actors_in_queue.add(actor)
 
     def gen_message_queue(self):
@@ -241,10 +243,11 @@ class Hive(Thread):
 
     def create_actor(self, actor_class, *args, **kwargs):
         hive_proxy = self.gen_proxy()
-        actor_id = kwargs.get("id") or self.gen_actor_id()
+        actor_id = kwargs.pop("id", None) or self.gen_actor_id()
 
         actor = actor_class(
             hive_proxy, actor_id, *args, **kwargs)
+        self.register_actor(actor)
 
         return actor_id
 
