@@ -139,7 +139,7 @@ class Hive(Thread):
         """
         message_id = id or self.gen_message_id()
         message = Message(
-            to=to, directive=to, from_id=from_id, body=body,
+            to=to, directive=directive, from_id=from_id, body=body,
             in_reply_to=in_reply_to, id=message_id)
         self.hive_action_queue.put(
             ("queue_message", message))
