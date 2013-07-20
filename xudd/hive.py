@@ -224,6 +224,12 @@ class Hive(Thread):
                 raise UnknownHiveAction(
                     "Unknown action: %s" % action_type)
 
+        self.stop_workers()
+
+    def stop_workers(self):
+        for worker in self.__workers:
+            worker.should_stop = True
+
     def gen_actor_id(self):
         """
         Generate an actor id.

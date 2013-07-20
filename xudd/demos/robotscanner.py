@@ -70,14 +70,14 @@ class Overseer(Actor):
             for droid_num in range(clean_droids):
                 droid = self.hive.create_actor(
                     Droid, infected=False, room=room)
-                yield self.hive.send_message(
+                yield self.wait_on_message(
                     to=droid,
                     directive="register_with_room")
 
             for droid_num in range(infected_droids):
                 droid = self.hive.create_actor(
                     Droid, infected=True, room=room)
-                yield self.hive.send_message(
+                yield self.wait_on_message(
                     to=droid,
                     directive="register_with_room")
 
@@ -220,11 +220,11 @@ class SecurityRobot(Actor):
 
             # Find all the droids in this room and exterminate the
             # infected ones.
-            response = yield self.hive.send_message(
+            response = yield self.wait_on_message(
                 to=self.room,
                 directive="list_droids")
             for droid_id in response.body["droid_ids"]:
-                response = yield self.hive.send_message(
+                response = yield self.wait_on_message(
                     to=droid_id,
                     directive="infection_expose")
 
@@ -252,7 +252,7 @@ class SecurityRobot(Actor):
                 # Keep firing till it's dead.
                 infected_droid_alive = True
                 while infected_droid_alive:
-                    response = yield self.hive.send_message(
+                    response = yield self.wait_on_message(
                         to=droid_id,
                         directive="get_shot")
 
@@ -266,7 +266,7 @@ class SecurityRobot(Actor):
                     infected_droid_alive = droid_status.body["alive"]
 
             # switch to next room, if there is one
-            response = yield self.hive.send_message(
+            response = yield self.wait_on_message(
                 to=self.room,
                 directive="get_next_room")
             next_room = response.body["id"]
@@ -294,7 +294,10 @@ def main():
         to="overseer",
         directive="init_world")
 
-    hive.run()
+    try:
+        hive.run()
+    except KeyboardInterrupt:
+        hive.stop_workers()
 
 
 if __name__ == "__main__":
