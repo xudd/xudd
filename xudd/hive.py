@@ -130,7 +130,8 @@ class Hive(Thread):
 
     def send_message(self, to, directive,
                      from_id=None,
-                     body=None, in_reply_to=None, id=None):
+                     body=None, in_reply_to=None, id=None,
+                     wants_reply=None):
         """
         API for sending a message to an actor.
 
@@ -140,7 +141,7 @@ class Hive(Thread):
         message_id = id or self.gen_message_id()
         message = Message(
             to=to, directive=directive, from_id=from_id, body=body,
-            in_reply_to=in_reply_to, id=message_id)
+            in_reply_to=in_reply_to, id=message_id, wants_reply=wants_reply)
         self.hive_action_queue.put(
             ("queue_message", message))
         return message_id
@@ -253,6 +254,7 @@ class Hive(Thread):
 
         actor = actor_class(
             hive_proxy, actor_id, *args, **kwargs)
+        hive_proxy.associate_with_actor(actor)
         self.register_actor(actor)
 
         return actor_id
@@ -280,11 +282,13 @@ class HiveProxy(object):
 
     def send_message(self, to, directive,
                      from_id=None,
-                     body=None, in_reply_to=None, id=None):
+                     body=None, in_reply_to=None, id=None,
+                     wants_reply=None):
         from_id = from_id or self.__actor.id
         return self.__hive.send_message(
             to=to, directive=directive, from_id=from_id, body=body,
-            in_reply_to=in_reply_to, id=id)
+            in_reply_to=in_reply_to, id=id,
+            wants_reply=wants_reply)
 
     def gen_message_queue(self, *args, **kwargs):
         return self.__hive.gen_message_queue(*args, **kwargs)

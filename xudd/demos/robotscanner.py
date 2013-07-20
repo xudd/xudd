@@ -103,7 +103,7 @@ class WarehouseRoom(Actor):
     """
     A room full of robots.
     """
-    def __init__(self, hive, id, room):
+    def __init__(self, hive, id):
         super(WarehouseRoom, self).__init__(hive, id)
         self.droids = []
         self.next_room = None
