@@ -41,6 +41,8 @@ Join the cult of XUDD
 
  - Read our docs: https://xudd.readthedocs.org/en/latest/
  - We're on IRC: #xudd on irc.freenode.net
+ - Original design doc (warning: it's rough):
+   http://dustycloud.org/misc/xudd.html
 
 
 The short of it
