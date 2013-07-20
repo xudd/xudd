@@ -57,7 +57,12 @@ class HiveWorker(Thread):
         # Get an actor from the actor queue
         #
         try:
-            actor = self.actor_queue.get(block=False)
+            if PY2:
+                actor = self.actor_queue.get(
+                    block=False)
+            else:
+                actor = self.actor_queue.get(
+                    block=True, timeout=1)
         except Empty:
             # We didn't do anything this round, oh well
             return False
@@ -202,7 +207,7 @@ class Hive(Thread):
         # Process actions
         while not self.should_stop:
             try:
-                action = self.hive_action_queue.get(block=False)
+                action = self.hive_action_queue.get(block=True, timeout=1)
             except Empty:
                 continue
 
