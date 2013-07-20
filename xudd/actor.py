@@ -62,6 +62,14 @@ class Actor(object):
             self._waiting_coroutines[message_id] = coroutine
             return
 
+    def wait_on_message(self, to, directive, from_id,
+                        id, body=None, in_reply_to=None):
+        return self.hive.send_message(
+            to, directive,
+            from_id=from_id,
+            body=body, in_reply_to=in_reply_to, id=id,
+            wants_reply=True)
+
 
 class ActorProxy(object):
     def __init__(self, actor_id):
