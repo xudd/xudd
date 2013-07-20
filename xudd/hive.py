@@ -272,6 +272,11 @@ class Hive(Thread):
 
         return actor_id
 
+    def send_shutdown(self):
+        # We should have a more graceful shutdown feature that gives
+        # the actors a chance to wrap up business ;)
+        self.should_stop = True
+
 
 class UnknownHiveAction(Exception): pass
 
@@ -311,3 +316,6 @@ class HiveProxy(object):
 
     def create_actor(self, actor_class, *args, **kwargs):
         return self.__hive.create_actor(actor_class, *args, **kwargs)
+
+    def send_shutdown(self, *args, **kwargs):
+        return self.__hive.send_shutdown(*args, **kwargs)

@@ -324,7 +324,7 @@ class SecurityRobot(Actor):
             directive="transmission",
             body={
                 "message": "Mission accomplished."})
-        # self.hive.send_shutdown()
+        self.hive.send_shutdown()
 
 
 def main():
