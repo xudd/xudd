@@ -101,7 +101,6 @@ class Hive(Thread):
 
         # Actor queue
         self.__actor_queue = Queue()
-        self.__actors_in_queue = set()
 
         self.num_workers = num_workers
         self.__workers = []
@@ -186,7 +185,6 @@ class Hive(Thread):
         Queue an actor... it's got messages to be processed!
         """
         self.__actor_queue.put(actor)
-        self.__actors_in_queue.add(actor)
 
     def gen_message_queue(self):
         return ActorMessageQueue()
@@ -214,11 +212,7 @@ class Hive(Thread):
                 actor = action[1]
                 with actor.message_queue.lock:
                     # Should we requeue?
-                    if actor.message_queue.queue.empty():
-                        # apparently not, remove the actor from the
-                        # "actors in queue" set
-                        self.actor_queue.actors_in_queue.pop(actor)
-                    else:
+                    if not actor.message_queue.queue.empty():
                         # Looks like so!
                         self.queue_actor(actor)
 
