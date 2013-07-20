@@ -1,12 +1,12 @@
 import json
 
 class Message(object):
-    def __init__(self, to, from_id, body, id, reply_to=None):
+    def __init__(self, to, from_id, id, body=None, in_reply_to=None):
         self.to = to
         self.from_id = from_id
-        self.body = body
+        self.body = body or {}
         self.id = id
-        self.reply_to = reply_to
+        self.in_reply_to = in_reply_to
 
     def to_dict(self):
         message = {
@@ -15,7 +15,7 @@ class Message(object):
             "id": self.id,
             "body": self.body}
         if self.reply_to:
-            message["reply_to"] = self.reply_to
+            message["in_reply_to"] = self.in_reply_to
 
         return message
 
