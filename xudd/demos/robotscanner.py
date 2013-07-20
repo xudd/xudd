@@ -36,8 +36,8 @@ class Overseer(Actor):
     Actor that initializes the world of this demo, starts the mission,
     and sends information about what's going on back to the user.
     """
-    def __init__(self, *args, **kwargs):
-        Actor.__init__(self, *args, **kwargs)
+    def __init__(self, hive, id):
+        Actor.__init__(self, hive, id)
 
         self.message_routing.update(
             {"init_world": self.init_world,
@@ -103,8 +103,8 @@ class WarehouseRoom(Actor):
     """
     A room full of robots.
     """
-    def __init__(self, *args, **kwargs):
-        super(WarehouseRoom, self).__init__(*args, **kwargs)
+    def __init__(self, hive, id, room):
+        super(WarehouseRoom, self).__init__(hive, id)
         self.droids = []
         self.next_room = None
         self.previous_room = None
@@ -146,14 +146,19 @@ class Droid(Actor):
 
     What will happen?  Stay tuned!
     """
-    def __init__(self, hive, id, infected=False):
+    def __init__(self, hive, id, room, infected=False):
         super(Droid, self).__init__(hive, id)
         self.infected = infected
         self.hp = 50
+        self.room = room
 
         self.message_routing.update(
             {"infection_expose": self.infection_expose,
-             "get_shot": self.get_shot})
+             "get_shot": self.get_shot,
+             "register_with_room": self.register_with_room})
+
+    def register_with_room(self, message):
+        pass
 
     def infection_expose(self, message):
         message.reply(
