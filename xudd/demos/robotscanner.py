@@ -48,7 +48,7 @@ class Overseer(Actor):
         Initialize the world we're operating in for this demo.
         """
         # DEBUG
-        print_function("beware I live!")
+        print("beware I live!")
 
         # Add rooms and droids
         last_room = None
@@ -94,7 +94,7 @@ class Overseer(Actor):
                 "starting_room": first_room.id})
 
     def transmission(self, message):
-        print_function(message.body['message'])
+        print(message.body['message'])
 
 
 class WarehouseRoom(Actor):
