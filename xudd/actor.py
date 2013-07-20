@@ -1,5 +1,9 @@
 from types import GeneratorType
 
+import logging
+
+_log = logging.getLogger(__name__)
+
 class Actor(object):
     """
     Basic XUDD actor.
@@ -32,6 +36,7 @@ class Actor(object):
 
             # Send this message reply to this coroutine
             try:
+                _log.debug('Sending reply {0}'.format(message))
                 message_id = coroutine.send(message)
             except StopIteration:
                 # And our job is done
@@ -60,8 +65,14 @@ class Actor(object):
             self._waiting_coroutines[message_id] = coroutine
             return
 
+    def send_message(self, *args, **kwargs):
+        return self.hive.send_message(*args, **kwargs)
+
     def wait_on_message(self, to, directive, from_id=None,
                         id=None, body=None, in_reply_to=None):
+        """
+        Send a message then wait for a reply.
+        """
         return self.hive.send_message(
             to, directive,
             from_id=from_id,
