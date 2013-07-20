@@ -66,13 +66,13 @@ class Overseer(Actor):
 
             for droid_num in range(clean_droids):
                 droid = Droid(self.hive, infected=False, room=room.id)
-                yield self.wait_on_message(
+                yield self.hive.send_message(
                     to=droid.id,
                     directive="register_with_room")
 
             for droid_num in range(infected_droids):
                 droid = Droid(self.hive, infected=True, room=room.id)
-                yield self.wait_on_message(
+                yield self.hive.send_message(
                     to=droid.id,
                     directive="register_with_room")
 
@@ -210,11 +210,11 @@ class SecurityRobot(Actor):
 
             # Find all the droids in this room and exterminate the
             # infected ones.
-            response = yield self.wait_on_message(
+            response = yield self.hive.send_message(
                 to=self.room,
                 directive="droids_in_room")
             for droid_id in response.body["droid_ids"]:
-                response = yield self.wait_on_message(
+                response = yield self.hive.send_message(
                     to=droid_id,
                     directive="infection_expose")
 
@@ -242,7 +242,7 @@ class SecurityRobot(Actor):
                 # Keep firing till it's dead.
                 infected_droid_alive = True
                 while infected_droid_alive:
-                    response = yield self.wait_on_message(
+                    response = yield self.hive.send_message(
                         to=droid_id,
                         directive="get_shot")
 
@@ -256,7 +256,7 @@ class SecurityRobot(Actor):
                     infected_droid_alive = droid_status.body["alive"]
 
             # switch to next room, if there is one
-            response = yield self.wait_on_message(
+            response = yield self.hive.send_message(
                 to=self.room,
                 directive="get_next_room")
             next_room = response.body["id"]
