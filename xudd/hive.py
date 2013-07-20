@@ -113,7 +113,7 @@ class Hive(Thread):
         self.should_stop = False
 
         # Objects related to generating unique ids for messages
-        self.message_uuid = uuid.uuid4()
+        self.message_uuid = unicode(uuid.uuid4())
         self.message_counter = count()
 
     def __init_and_start_workers(self):
@@ -228,7 +228,7 @@ class Hive(Thread):
         """
         Generate an actor id.
         """
-        return uuid.uuid4()
+        return unicode(uuid.uuid4())
 
     def gen_message_id(self):
         """

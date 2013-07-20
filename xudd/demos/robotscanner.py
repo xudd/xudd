@@ -55,28 +55,30 @@ class Overseer(Actor):
         first_room = None
 
         for clean_droids, infected_droids in ROOM_STRUCTURE:
-            room = WarehouseRoom(self.hive)
+            room = self.hive.create_actor(WarehouseRoom)
 
             if last_room:
                 self.hive.send_message(
-                    to=last_room.id,
+                    to=last_room,
                     directive="set_next_room",
-                    body={"id": room.id})
+                    body={"id": room})
                 self.hive.send_message(
-                    to=room.id,
+                    to=room,
                     directive="set_previous_room",
-                    body={"id": last_room.id})
+                    body={"id": last_room})
 
             for droid_num in range(clean_droids):
-                droid = Droid(self.hive, infected=False, room=room.id)
+                droid = self.hive.create_actor(
+                    Droid, infected=False, room=room)
                 yield self.hive.send_message(
-                    to=droid.id,
+                    to=droid,
                     directive="register_with_room")
 
             for droid_num in range(infected_droids):
-                droid = Droid(self.hive, infected=True, room=room.id)
+                droid = self.hive.create_actor(
+                    Droid, infected=True, room=room)
                 yield self.hive.send_message(
-                    to=droid.id,
+                    to=droid,
                     directive="register_with_room")
 
             last_room = room
@@ -84,14 +86,14 @@ class Overseer(Actor):
                 first_room = room
 
         # Add security robot
-        security_robot = SecurityRobot(self.hive)
+        security_robot = self.hive.create_actor(SecurityRobot)
 
         # Tell the security robot to begin their mission
         self.hive.send_message(
-            to=security_robot.id,
+            to=security_robot,
             directive="begin_mission",
             body={
-                "starting_room": first_room.id})
+                "starting_room": first_room})
 
     def transmission(self, message):
         print(message.body['message'])
@@ -102,18 +104,18 @@ class WarehouseRoom(Actor):
     A room full of robots.
     """
     def __init__(self, *args, **kwargs):
-        super(WarehouseRoom, self).__init__(self, *args, **kwargs)
+        super(WarehouseRoom, self).__init__(*args, **kwargs)
         self.droids = []
         self.next_room = None
         self.previous_room = None
 
-        self.message_routing.extend(
+        self.message_routing.update(
             {"set_next_room": self.set_next_room,
              "set_previous_room": self.set_previous_room,
              "get_next_room": self.get_next_room,
              "get_previous_room": self.get_previous_room,
              "register_droid": self.register_droid,
-             "droids_in_room": self.droids_in_room})
+             "list_droids": self.list_droids})
 
 
     def set_next_room(self, message):
@@ -145,11 +147,11 @@ class Droid(Actor):
     What will happen?  Stay tuned!
     """
     def __init__(self, hive, id, infected=False):
-        super(Droid, self).__init__(self, hive, id)
+        super(Droid, self).__init__(hive, id)
         self.infected = infected
         self.hp = 50
 
-        self.message_routing.extend(
+        self.message_routing.update(
             {"infection_expose": self.infection_expose,
              "get_shot": self.get_shot})
 
@@ -181,12 +183,12 @@ class SecurityRobot(Actor):
     Security robot... designed to seek out and destroy infected droids.
     """
     def __init__(self, hive, id):
-        super(SecurityRobot, self).__init__(self, hive, id)
+        super(SecurityRobot, self).__init__(hive, id)
 
         # The room we're currently in
         self.room = None
 
-        self.message_routing.extend(
+        self.message_routing.update(
             {"begin_mission": self.begin_mission})
 
     def __droid_status_format(self, shot_response):
@@ -215,7 +217,7 @@ class SecurityRobot(Actor):
             # infected ones.
             response = yield self.hive.send_message(
                 to=self.room,
-                directive="droids_in_room")
+                directive="list_droids")
             for droid_id in response.body["droid_ids"]:
                 response = yield self.hive.send_message(
                     to=droid_id,
