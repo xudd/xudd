@@ -48,6 +48,9 @@ class Actor(object):
         message_handler = self.message_routing[message["directive"]]
 
         result = message_handler(message)
+
+        # If this is a coroutine, then we should handle putting its
+        # results into the coroutine registry
         if isinstance(result, GeneratorType):
             coroutine = result
             message_to_send = result.send(None)
