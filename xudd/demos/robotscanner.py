@@ -70,9 +70,11 @@ class Overseer(Actor):
             for droid_num in range(clean_droids):
                 droid = self.hive.create_actor(
                     Droid, infected=False, room=room)
+                print("I am here")
                 yield self.wait_on_message(
                     to=droid,
                     directive="register_with_room")
+                print("but am I here?")
 
             for droid_num in range(infected_droids):
                 droid = self.hive.create_actor(
@@ -138,6 +140,11 @@ class WarehouseRoom(Actor):
 
     def register_droid(self, message):
         self.droids.append(message.body['droid_id'])
+        self.hive.send_message(
+            to=message.from_id,
+            in_reply_to=message.id,
+            directive="message_handled")
+            
 
 
 class Droid(Actor):
@@ -158,7 +165,12 @@ class Droid(Actor):
              "register_with_room": self.register_with_room})
 
     def register_with_room(self, message):
-        pass
+        print("ohai")
+        yield self.wait_on_message(
+            to=self.room,
+            directive="register_droid",
+            body={"droid_id": self.id})
+        print("yay we got registered")
 
     def infection_expose(self, message):
         message.reply(
