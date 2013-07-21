@@ -12,6 +12,7 @@ except ImportError:
     from Queue import Queue, Empty
 
 from xudd.message import Message
+from xudd.utils import UniqueQueue
 
 
 class ActorMessageQueue(object):
@@ -57,12 +58,7 @@ class HiveWorker(Thread):
         # Get an actor from the actor queue
         #
         try:
-            if PY2:
-                actor = self.actor_queue.get(
-                    block=False)
-            else:
-                actor = self.actor_queue.get(
-                    block=True, timeout=1)
+            actor = self.actor_queue.get()
         except Empty:
             # We didn't do anything this round, oh well
             return False
@@ -104,7 +100,7 @@ class Hive(Thread):
         self.__actor_registry = {}
 
         # Actor queue
-        self.__actor_queue = Queue()
+        self.__actor_queue = UniqueQueue()
 
         self.num_workers = num_workers
         self.__workers = []
