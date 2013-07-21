@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 import uuid
-from threading import Thread, Lock
+from threading import Thread, Lock, Event
 from itertools import count
 
 from xudd import PY2
@@ -23,6 +23,7 @@ class ActorMessageQueue(object):
     def __init__(self):
         self.queue = Queue()
         self.lock = Lock()
+        self.forbid_requeue = Event()
 
 
 class HiveWorker(Thread):
@@ -63,26 +64,35 @@ class HiveWorker(Thread):
             # We didn't do anything this round, oh well
             return False
 
-        # Process messages from this actor
-        messages_processed = 0
-        while self.max_messages is None \
-              or messages_processed < self.max_messages:
-            # Get a message off the message queue
-            # (I don't think we need to lock while pulling one off the stack,
-            #  but doesn't hurt?)
-            with actor.message_queue.lock:
-                try:
-                    message = actor.message_queue.queue.get(block=False)
-                except Empty:
-                    # No messages on the queue anyway, might as well break out
-                    # from this
-                    break
+        print("Actor is in queue set: %s" % (actor in self.actor_queue._actors_in_queue))
 
-            actor.handle_message(message)
-            messages_processed += 1
+        try:
+            #actor.message_queue.forbid_requeue.set()
 
-        # Request checking if actor should be requeued with hive
-        self.hive.request_possibly_requeue_actor(actor)
+            # Process messages from this actor
+            messages_processed = 0
+            while self.max_messages is None \
+                  or messages_processed < self.max_messages:
+                # Get a message off the message queue
+                # (I don't think we need to lock while pulling one off the stack,
+                #  but doesn't hurt?)
+                with actor.message_queue.lock:
+                    try:
+                        message = actor.message_queue.queue.get(block=False)
+                    except Empty:
+                        # No messages on the queue anyway, might as well break out
+                        # from this
+                        break
+
+                actor.handle_message(message)
+                messages_processed += 1
+            print("Actor is in queue set (again): %s" % (actor in self.actor_queue._actors_in_queue))
+
+        finally:
+            actor.message_queue.forbid_requeue.clear()
+
+            # Request checking if actor should be requeued with hive
+            self.hive.request_possibly_requeue_actor(actor)
 
 
 class Hive(Thread):
@@ -184,12 +194,6 @@ class Hive(Thread):
         finally:
             self.stop_workers()
 
-    def queue_actor(self, actor):
-        """
-        Queue an actor... it's got messages to be processed!
-        """
-        self.__actor_queue.put(actor)
-
     def gen_message_queue(self):
         return ActorMessageQueue()
 
@@ -218,9 +222,10 @@ class Hive(Thread):
                 actor = action[1]
                 with actor.message_queue.lock:
                     # Should we requeue?
-                    if not actor.message_queue.queue.empty():
+                    if not actor.message_queue.queue.empty() and not \
+                       actor.message_queue.forbid_requeue.is_set():
                         # Looks like so!
-                        self.queue_actor(actor)
+                        self.__actor_queue.put(actor)
 
             elif action_type == "queue_message":
                 message = action[1]
