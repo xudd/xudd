@@ -12,7 +12,7 @@ class DepartmentChair(Actor):
         self.message_routing.update(
             {"oversee_experiments": self.oversee_experiments,
              "experiment_is_done": self.experiment_is_done})
-        self.waiting_on_experiments = set()
+        self.experiments_in_progress = set()
 
     def oversee_experiments(self, message):
         for i in range(20):
@@ -24,7 +24,7 @@ class DepartmentChair(Actor):
                 directive="run_experiments",
                 body={
                     "assistant_id": assistant,
-                    "numtimes": 1000})
+                    "numtimes": 5000})
             
     def experiment_is_done(self, message):
         self.experiments_in_progress.remove(message.from_id)
@@ -40,7 +40,7 @@ class Professor(Actor):
         self.message_routing.update(
             {"run_experiments": self.run_experiments})
 
-    def run_experiment(self, message):
+    def run_experiments(self, message):
         """Run an errand... but really, this means asking your assistant
         to constantly do run stupid errands...
         """
@@ -50,6 +50,10 @@ class Professor(Actor):
             yield self.wait_on_message(
                 to=assistant,
                 directive="run_errand")
+
+        self.hive.send_message(
+            to=message.from_id,
+            directive="experiment_is_done")
 
 
 class Assistant(Actor):
