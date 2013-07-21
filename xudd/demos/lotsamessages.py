@@ -44,8 +44,8 @@ class DepartmentChair(Actor):
         print("%s experiment is done" % message.from_id)
         if len(self.experiments_in_progress) == 0:
             print(
-                "Last experiment message (%s) received, shutting down" % (
-                    message.id))
+                "Last experiment message (%s) received from (%s), shutting down" % (
+                    message.id, message.from_id))
             self.hive.send_shutdown()
 
 
