@@ -176,8 +176,8 @@ class Hive(Thread):
         #     with messages not appearing on actor_queue
         with actor.message_queue.lock:
             actor.message_queue.queue.put(message)
-            # Add the wrapped actor, if it's not in that set already
-            self.queue_actor(actor)
+
+        self.request_possibly_requeue_actor(actor)
 
     def run(self):
         try:
