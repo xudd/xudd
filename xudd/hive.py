@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 import uuid
-from threading import Thread, Lock
+from threading import Thread, Lock, Event
 from itertools import count
 
 from xudd import PY2
@@ -15,13 +15,20 @@ from xudd.message import Message
 
 
 class ActorMessageQueue(object):
-    """
-    The "message_queue" object (technically a queue and a lock)
+    """The "message_queue" object (technically a queue and a lock)
     that actors get with this hive pattern.
+
+    Attributes:
+     - queue: Our own message queue
+     - lock: a lock that must be set while adding to or removing items
+       from this queue
+     - on_actor_queue: a flag that says whether or not we're on the
+       actor queue.  NOT related to this object's own .queue attribute!
     """
     def __init__(self):
         self.queue = Queue()
         self.lock = Lock()
+        self.on_actor_queue = Event()
 
 
 class HiveWorker(Thread):
@@ -66,6 +73,9 @@ class HiveWorker(Thread):
         except Empty:
             # We didn't do anything this round, oh well
             return False
+
+        # Clear the "I'm on the actor queue" flag
+        actor.message_queue.on_actor_queue.clear()
 
         # Process messages from this actor
         messages_processed = 0
@@ -176,8 +186,8 @@ class Hive(Thread):
         #     with messages not appearing on actor_queue
         with actor.message_queue.lock:
             actor.message_queue.queue.put(message)
-
-        self.request_possibly_requeue_actor(actor)
+            if not actor.message_queue.on_actor_queue.is_set():
+                self.queue_actor(actor)
 
     def run(self):
         try:
@@ -193,6 +203,7 @@ class Hive(Thread):
         Queue an actor... it's got messages to be processed!
         """
         self.__actor_queue.put(actor)
+        actor.message_queue.on_actor_queue.set()
 
     def gen_message_queue(self):
         return ActorMessageQueue()
@@ -222,7 +233,8 @@ class Hive(Thread):
                 actor = action[1]
                 with actor.message_queue.lock:
                     # Should we requeue?
-                    if not actor.message_queue.queue.empty():
+                    if not actor.message_queue.queue.empty() \
+                       and not actor.message_queue.on_actor_queue.is_set():
                         # Looks like so!
                         self.queue_actor(actor)
 
