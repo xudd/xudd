@@ -1,5 +1,12 @@
+"""
+"""
+from __future__ import print_function
+
+import argparse
+
 from xudd.hive import Hive
 from xudd.actor import Actor
+
 
 class DepartmentChair(Actor):
     """
@@ -15,7 +22,13 @@ class DepartmentChair(Actor):
         self.experiments_in_progress = set()
 
     def oversee_experiments(self, message):
-        for i in range(20):
+        num_experiments = message.body['num_experiments']
+        num_steps = message.body['num_steps']
+
+        print("Starting %s experiments with %s steps each" % (
+            num_experiments, num_steps))
+
+        for i in range(num_experiments):
             professor = self.hive.create_actor(Professor)
             assistant = self.hive.create_actor(Assistant)
             self.experiments_in_progress.add(professor)
@@ -24,12 +37,15 @@ class DepartmentChair(Actor):
                 directive="run_experiments",
                 body={
                     "assistant_id": assistant,
-                    "numtimes": 5000})
+                    "numtimes": num_steps})
             
     def experiment_is_done(self, message):
         self.experiments_in_progress.remove(message.from_id)
         print("%s experiment is done" % message.from_id)
         if len(self.experiments_in_progress) == 0:
+            print(
+                "Last experiment message (%s) received, shutting down" % (
+                    message.id))
             self.hive.send_shutdown()
 
 
@@ -73,14 +89,34 @@ class Assistant(Actor):
 
 
 def main():
-    hive = Hive(num_workers=5)
+    parser = argparse.ArgumentParser(
+        description="Lots of Messages experiment")
+    parser.add_argument(
+        "-e", "--experiments",
+        help="Number of experiments to run",
+        default=20, type=int)
+    parser.add_argument(
+        "-s", "--steps",
+        help="Number of steps each experiment should require",
+        default=5000, type=int)
+    parser.add_argument(
+        "-w", "--workers",
+        help="How many worker threads running in the hive",
+        default=5, type=int)
+
+    args = parser.parse_args()
+
+    hive = Hive(num_workers=args.workers)
 
     department_chair = hive.create_actor(
         DepartmentChair)
 
     hive.send_message(
         to=department_chair,
-        directive="oversee_experiments")
+        directive="oversee_experiments",
+        body={
+            "num_experiments": args.experiments,
+            "num_steps": args.steps})
 
     hive.run()
 
