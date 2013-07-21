@@ -238,7 +238,7 @@ class Hive(Thread):
         for worker in self.__workers:
             worker.should_stop = True
 
-    def gen_actor_id(self, cls):
+    def gen_actor_id(self):
         """
         Generate an actor id.
         """
@@ -263,7 +263,7 @@ class Hive(Thread):
 
     def create_actor(self, actor_class, *args, **kwargs):
         hive_proxy = self.gen_proxy()
-        actor_id = kwargs.pop("id", None) or self.gen_actor_id(actor_class)
+        actor_id = kwargs.pop("id", None) or self.gen_actor_id()
 
         actor = actor_class(
             hive_proxy, actor_id, *args, **kwargs)
