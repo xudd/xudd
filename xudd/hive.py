@@ -57,6 +57,12 @@ class HiveWorker(Thread):
         # Get an actor from the actor queue
         #
         try:
+            # Why do this differently for python 2 and python 3??
+            # Doing just .get() without a block means a constant loop,
+            # but oddly there was a bug in python 2.X that got
+            # resolved where doing block with a timeout would both
+            # thrash, take up a ton of CPU, and go super slowly... so
+            # we don't use it in 2.X
             if PY2:
                 actor = self.actor_queue.get(
                     block=False)
@@ -207,6 +213,8 @@ class Hive(Thread):
         # Process actions
         while not self.should_stop:
             try:
+                # see the comment in HiveWorker's process_actor to see
+                # why this is
                 if PY2:
                     action = self.hive_action_queue.get(block=False)
                 else:
