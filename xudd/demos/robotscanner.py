@@ -330,7 +330,7 @@ class SecurityRobot(Actor):
 def main():
     # Set up logging
     logging.basicConfig()
-    logging.getLogger().setLevel(logging.DEBUG)
+    logging.getLogger().setLevel(logging.WARNING)
 
     # Invoke the destruction deity
     hive = Hive(num_workers=5)
