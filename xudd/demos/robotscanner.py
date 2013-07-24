@@ -333,7 +333,7 @@ def main():
     logging.getLogger().setLevel(logging.WARNING)
 
     # Invoke the destruction deity
-    hive = Hive(num_workers=5)
+    hive = Hive()
 
     # Add overseer, who populates the world and reports things
     hive.create_actor(Overseer, id="overseer")

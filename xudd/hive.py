@@ -85,17 +85,12 @@ class Hive(Thread):
                 "messages to an actor that didn't exist more gracefully?")
             return False
 
-        actor.message_queue.queue.append(message)
+        actor.message_queue.append(message)
 
         self.request_possibly_requeue_actor(actor)
 
     def run(self):
-        try:
-            self.workloop()
-        except:
-            raise
-        finally:
-            self.stop_workers()
+        self.workloop()
 
     def gen_message_queue(self):
         """Generate a message queue for an actor.
@@ -123,11 +118,12 @@ class Hive(Thread):
             self._process_actor_messages()
 
     def _process_hive_actions(self):
-        while True:
+        for i in range(len(self.hive_action_queue)):
             try:
                 action = self.hive_action_queue.popleft()
             except IndexError:
                 # no more hive actions to process
+                # ... this shouldn't happen though?
                 break
 
             action_type = action[0]
@@ -150,6 +146,30 @@ class Hive(Thread):
             else:
                 raise UnknownHiveAction(
                     "Unknown action: %s" % action_type)
+
+    def _process_actor_messages(self):
+        for i in range(len(self._actor_queue)):
+            actor = self._actor_queue.popleft()
+            self._actors_in_queue.remove(actor)
+
+            # Process messages from this actor
+            messages_processed = 0
+            while self.actor_messages_per_cycle is None \
+                  or messages_processed < self.actor_messages_per_cycle:
+                # Get a message off the message queue
+                try:
+                    message = actor.message_queue.popleft()
+                except IndexError:
+                    # No messages on the queue anyway, might as well break out
+                    # from this
+                    break
+
+                actor.handle_message(message)
+                messages_processed += 1
+
+            # mark for possible requeueing
+            self.request_possibly_requeue_actor(actor)
+
 
     def gen_actor_id(self):
         """

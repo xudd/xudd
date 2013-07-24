@@ -96,7 +96,7 @@ def main():
 
     args = parser.parse_args()
 
-    hive = Hive(num_workers=args.workers)
+    hive = Hive()
 
     snape = hive.create_actor(
         Professor, id="snape")
