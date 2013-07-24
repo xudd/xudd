@@ -80,7 +80,7 @@ Why?
 ----
 
 Twisted and Node.js are cool, but frankly, I have a hard time
-following code that's broken into a billion tiny event'y functions.
+following code that's broken into a billion tiny event'y callbacks.
 Basically, eventually I feel like you're fighting the Flying Spagetti
 Monster of code.  Within the cult of XUDD we hope to banish Flying
 Spagetti Monster code and raise old, chaotic gods of the actor model
