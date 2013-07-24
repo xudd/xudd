@@ -16,7 +16,7 @@ class Hive(Thread):
 
     Inter-hive communication may exist in the future, it doesn't yet ;)
     """
-    def __init__(self):
+    def __init__(self, actor_messages_per_cycle=15):
         super(Hive, self).__init__()
 
         self._actor_registry = {}
@@ -40,7 +40,7 @@ class Hive(Thread):
         self.message_counter = count()
 
         # Maximum number of messags
-        self.max_messages_per_actor_per_cycle = 5
+        self.actor_messages_per_cycle = actor_messages_per_cycle
 
     def register_actor(self, actor):
         self._actor_registry[actor.id] = actor
