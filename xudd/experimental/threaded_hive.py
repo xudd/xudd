@@ -108,13 +108,13 @@ class Hive(Thread):
         # NO locking on this presently, though maybe we should?
         # At the very least, one *should not* iterate through this dictionary
         # ... wouldn't be hard to set up a lock if we need it
-        self.__actor_registry = {}
+        self._actor_registry = {}
 
         # Actor queue
-        self.__actor_queue = Queue()
+        self._actor_queue = Queue()
 
         self.num_workers = num_workers
-        self.__workers = []
+        self._workers = []
 
         # This is actions for ourself to take, such as checking if an
         # actor should be re-queued, and queueing messages to an actor
@@ -130,17 +130,17 @@ class Hive(Thread):
 
         self.message_counter = count()
 
-    def __init_and_start_workers(self):
+    def _init_and_start_workers(self):
         for i in range(self.num_workers):
-            worker = HiveWorker(self, self.__actor_queue)
-            self.__workers.append(worker)
+            worker = HiveWorker(self, self._actor_queue)
+            self._workers.append(worker)
             worker.start()
 
     def register_actor(self, actor):
-        self.__actor_registry[actor.id] = actor
+        self._actor_registry[actor.id] = actor
 
     def remove_actor(self, actor_id):
-        self.__actor_registry.pop(actor_id)
+        self._actor_registry.pop(actor_id)
 
     def send_message(self, to, directive,
                      from_id=None,
@@ -169,7 +169,7 @@ class Hive(Thread):
         Queue a message to its appropriate actor.
         """
         try:
-            actor = self.__actor_registry[message.to]
+            actor = self._actor_registry[message.to]
         except KeyError:
             # TODO:
             #   In the future, if this fails, we should send a message back to
@@ -188,7 +188,7 @@ class Hive(Thread):
 
     def run(self):
         try:
-            self.__init_and_start_workers()
+            self._init_and_start_workers()
             self.workloop()
         except:
             raise
@@ -199,7 +199,7 @@ class Hive(Thread):
         """
         Queue an actor... it's got messages to be processed!
         """
-        self.__actor_queue.put(actor)
+        self._actor_queue.put(actor)
 
     def gen_message_queue(self):
         return ActorMessageQueue()
@@ -244,7 +244,7 @@ class Hive(Thread):
                     "Unknown action: %s" % action_type)
 
     def stop_workers(self):
-        for worker in self.__workers:
+        for worker in self._workers:
             worker.should_stop = True
 
     def gen_actor_id(self):
