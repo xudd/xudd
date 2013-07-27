@@ -59,8 +59,9 @@ these are yet to be implemented):
 
 - **Inter-hive messaging:** 
 - **Dedicated actors:**
-
-
+- **Actor "event" subscriptions:**
+- **Property API:**
+- **Actor serialization:**
 
 Detailed design
 ===============
