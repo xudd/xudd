@@ -63,6 +63,69 @@ these are yet to be implemented):
 - **Property API:**
 - **Actor serialization:**
 
+
 Detailed design
 ===============
+
+Actors, hives, and other actors
+-------------------------------
+
+So, the above explains the relationships between actors, messaging,
+and hives.  
+
+::
+
+  ACTOR AND HIVE BASICS
+
+    .--.     .--.     .--. 
+   ( o_o)   ( =_=)   (@_@ )
+   ,'--',   ,'--',   ,'--',     
+   |  A |   |  B |   | C  |
+   '----'   '----'   '----'
+    .  ^     .  ^     .  ^
+    |  |     |  |     |  |
+  [HP] |   [HP] |   [HP] |
+    |  |     |  |     |  |
+    V  '     V  '     V  '
+  .------------------------.
+  |         HIVE           |
+  '------------------------'
+
+Here we have the basic relationship between a hive and three of its
+actors, A B and C.  Each one has its own unique id, shared by no other
+actor on the hive.  You can see that there are also relationships
+between an actor on the hive.  The hive has direct access to an actor,
+but actors don't have direct access to the hive... they have to go
+through a HiveProxy.  There's good reason for this: hives may have
+more methods than should be exposed to actors.  In fact, it's entirely
+possible for an actor to be hooked up to a hive that operates very
+differently than the "basic" hive that XUDD ships with.  By using the
+HiveProxy, the actor doesn't actually need to know anything about how
+the Hive works: as long as it uses the HiveProxy methods, those
+operate just fine.
+
+You can see how this works in code:
+
+TODO: Add this code
+
+
+Sending messages from actor to actor
+------------------------------------
+
+
+Message queues and the two types of actors
+------------------------------------------
+
+
+Basic actors
+~~~~~~~~~~~~
+
+TODO: Document how each actor is "woken up" as messages come in
+
+Dedicated actors
+~~~~~~~~~~~~~~~~
+
+
+Yielding for replies
+--------------------
 
