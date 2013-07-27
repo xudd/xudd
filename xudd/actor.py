@@ -72,13 +72,25 @@ class Actor(object):
     def wait_on_message(self, to, directive, from_id=None,
                         id=None, body=None, in_reply_to=None):
         """
-        Send a message then wait for a reply.
+        Send a message that we'll wait for a reply to.
         """
         return self.hive.send_message(
             to, directive,
             from_id=from_id,
             body=body, in_reply_to=in_reply_to, id=id,
             wants_reply=True)
+
+    def reply_to_message(self, message, body=None,
+                         directive=u"reply", wants_reply=False):
+        """
+        Send a message in reply to a message we received.
+        """
+        return self.hive.send_message(
+            to=message.from_id,
+            in_reply_to=message.id,
+            directive=directive,
+            body=body,
+            wants_reply=wants_reply)
 
 
 class ActorProxy(object):
