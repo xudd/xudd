@@ -57,6 +57,9 @@ You can find our code at: https://github.com/cwebber/xudd/
 .. toctree::
    :maxdepth: 2
 
+   intro
+   core
+
 
 Indices and tables
 ==================
