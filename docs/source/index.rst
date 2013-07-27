@@ -59,6 +59,7 @@ You can find our code at: https://github.com/cwebber/xudd/
 
    intro
    core
+   cloud
 
 
 Indices and tables
