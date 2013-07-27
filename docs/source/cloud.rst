@@ -26,4 +26,4 @@ We've got all the clouds with XUDD.  Remote clouds???  Local clouds???
 Public clouds???  Private clouds???  We've got all of them.  ALL THE
 CLOUDS.
 
-ALL OF THEM.
+All of them.
