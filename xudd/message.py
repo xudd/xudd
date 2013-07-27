@@ -2,7 +2,7 @@ import json
 
 class Message(object):
     def __init__(self, to, directive, from_id, id, body=None, in_reply_to=None,
-                 wants_reply=False):
+                 wants_reply=False, hive_proxy=None):
         self.to = to
         self.directive = directive
         self.from_id = from_id
@@ -12,6 +12,15 @@ class Message(object):
         self.wants_reply = wants_reply
 
         self.replied = False
+
+    def __repr__(self):
+        return u"<{cls} #{id} {inreply}to={to} from={from_id}>".format(
+            cls=self.__class__.__name__,
+            inreply='in-reply-to={in_reply_to} '.format(
+                in_reply_to=self.in_reply_to) if self.in_reply_to else '',
+            to=self.to,
+            from_id=self.from_id,
+            id=self.id)
 
     def to_dict(self):
         message = {
@@ -43,15 +52,6 @@ class Message(object):
         Returns a new Message instance based on a serialized message
         """
         return serialize_message_msgpack(serialized_message)
-
-    def __repr__(self):
-        return u"<{cls} #{id} {inreply}to={to} from={from_id}>".format(
-            cls=self.__class__.__name__,
-            inreply='in-reply-to={in_reply_to} '.format(
-                in_reply_to=self.in_reply_to) if self.in_reply_to else '',
-            to=self.to,
-            from_id=self.from_id,
-            id=self.id)
 
 
 ###############################
