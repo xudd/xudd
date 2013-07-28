@@ -13,6 +13,7 @@
 /docs/_build/
 /docs/build
 /user_dev/
+/.tox/
 
 # File extensions
 *.pyc
