@@ -106,11 +106,13 @@ operate just fine.
 
 You can see how this works in code:
 
-TODO: Add this code
+.. todo:: Add this code
 
 
 Sending messages from actor to actor
 ------------------------------------
+
+.. autoclass:: xudd.message.Message
 
 
 Message queues and the two types of actors
@@ -120,7 +122,7 @@ Message queues and the two types of actors
 Basic actors
 ~~~~~~~~~~~~
 
-TODO: Document how each actor is "woken up" as messages come in
+.. todo:: Document how each actor is "woken up" as messages come in
 
 Dedicated actors
 ~~~~~~~~~~~~~~~~
@@ -128,4 +130,16 @@ Dedicated actors
 
 Yielding for replies
 --------------------
+
+.. _replying-to-messages:
+
+Replying to messages
+--------------------
+
+
+Variants and meta-discussion
+============================
+
+Variants on the standard Hive
+-----------------------------
 
