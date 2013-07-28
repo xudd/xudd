@@ -81,11 +81,9 @@ What might you write in XUDD?
 Here are some brief examples of some things we might write in XUDD and
 how we (abstractly) might write them.
 
-
-Web applications
-----------------
-
-.. todo:: web applications
+Some of this isn't possible quite yet with XUDD (so expect appropriate
+levels of vapors), but these are all things XUDD is aiming towards
+being usable for:
 
 
 A massively multiplayer game
@@ -128,6 +126,39 @@ You could break your game out like so:
   itself serializable.  Upon shutdown of the world, every character
   serializes itself into an object store.  When the server is turned
   back on, all characters can be restored, mostly as they were.
+
+Thanks to inter-hive communication, if your game world got
+particularly large, you could shard components of it and keep
+characters that are in one part of the world on one process and
+characters that are in another part of the world on another process,
+but still allow them to communicate and send mesages to each other.
+
+
+Web applications
+----------------
+
+Say you want to write a web application.  But these days, web
+applications have a lot of components!  In XUDD, you could build an
+application that has all of these components, but nicely combined:
+
+- The standard HTTP component of the web application.  This might be a
+  Django or Flask web application, or it might be a more custom WSGI
+  application.
+- Task queueing and processing, a-la Celery.
+- Websockets support that nicely integrates with the rest of your
+  codebase.
+
+With XUDD, you could write this so that the HTTP/WSGI application
+components are handled by their own actors or a set of actors.  You
+wouldn't necessarily need to write this code differently than you
+already are... the WSGI application could pass off tasks to the task
+queuing actors via fire-and-forget messages (if you wanted coroutines
+built into the http side of things, you'd have to structure it
+differently).  Websocket communication could happen by an actor as
+well, which passes off the activities to a set of child actors as
+well.  Thanks to the power of inter-hive communication, it should also
+be possible to shard various segments of this functionality into
+multiple processes.
 
 
 Distributed data crunching
