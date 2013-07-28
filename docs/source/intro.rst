@@ -8,9 +8,16 @@ Introduction
    of old snaked their tentacles across the surface of the Earth,
    destroying and reshaping.  The followers of the Cult of XUDD saw it
    and knew: if it was not good, it was at least right; it was the
-   order of things as they were always meant to be.  Submit, and be
-   awoken at last.
-     -- The First Tome of XUDD, The Awakening: Section 23:8
+   order of things as they were always meant to be.
+
+   And so the followers saw themselves for what they were: actors upon
+   the stage of the world.  As the Hives emerged, as if they had grown
+   out of the boils of the earth itself, they filed themselves within
+   them, ready to do their service to the greater colonies.
+
+   Submit, and be awoken at last.
+
+     -- The First Tome of XUDD, The Awakening: Section 23:8-10
 
 
 Why XUDD?
