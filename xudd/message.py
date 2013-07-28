@@ -11,7 +11,9 @@ class Message(object):
         self.in_reply_to = in_reply_to
         self.wants_reply = wants_reply
 
-        self.replied = False
+        self.replied_to = False
+        self.deferred_reply = False
+        self.hive_proxy = hive_proxy
 
     def __repr__(self):
         return u"<{cls} #{id} {inreply}to={to} from={from_id}>".format(
@@ -21,6 +23,50 @@ class Message(object):
             to=self.to,
             from_id=self.from_id,
             id=self.id)
+
+    ###############
+    # Reply methods
+    ###############
+
+    def reply(self, body=None, directive=u"reply", wants_reply=False):
+        """
+        Send a reply to this message.
+
+        This also marks the flag that we were replied to properly.
+        """
+        # I guess we should make hive_proxy mandatory?? or something?
+        # definitely mandatory to use this
+        assert self.hive_proxy is not None
+
+        self.hive_proxy.send_message(
+            to=self.from_id,
+            directive=directive,
+            wants_reply=wants_reply,
+            in_reply_to=self.id,
+            body=body)
+            
+        # Yup, we were replied to
+        self.replied = True
+
+    def defer_reply(self):
+        """
+        Mark that this message isn't replied to now, but will be
+        replied to later
+        """
+        self.deferred_reply = True
+
+    def needs_reply(self):
+        """
+        See if we still need a reply.
+
+        Returns True or False based on the value of
+          self.needs_reply, self.deferred_reply, and self.replied
+        """
+        return self.needs_reply and not (self.deferred_reply or self.replied)
+
+    #######################################
+    # Serializing and deserializing methods
+    #######################################
 
     def to_dict(self):
         message = {
@@ -34,10 +80,6 @@ class Message(object):
             message["in_reply_to"] = self.in_reply_to
 
         return message
-
-    def reply(self, directive, body=None, wants_reply=None):
-        self.replied = True
-        return Message
 
     @classmethod
     def from_dict(cls, dict_message):
@@ -54,9 +96,9 @@ class Message(object):
         return serialize_message_msgpack(serialized_message)
 
 
-###############################
-# Serializing and deserializing
-###############################
+#########################################
+# Serializing and deserializing functions
+#########################################
 
 
 try:

@@ -80,18 +80,6 @@ class Actor(object):
             body=body, in_reply_to=in_reply_to, id=id,
             wants_reply=True)
 
-    def reply_to_message(self, message, body=None,
-                         directive=u"reply", wants_reply=False):
-        """
-        Send a message in reply to a message we received.
-        """
-        return self.hive.send_message(
-            to=message.from_id,
-            in_reply_to=message.id,
-            directive=directive,
-            body=body,
-            wants_reply=wants_reply)
-
 
 class ActorProxy(object):
     def __init__(self, actor_id):

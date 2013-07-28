@@ -85,6 +85,9 @@ class Hive(Thread):
                 "messages to an actor that didn't exist more gracefully?")
             return False
 
+        # Maybe not the most opportune place to attach this
+        message.hive_proxy = actor.hive
+
         actor.message_queue.append(message)
 
         self.request_possibly_requeue_actor(actor)
