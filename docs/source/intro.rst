@@ -8,7 +8,7 @@ Introduction
    of old snaked their tentacles across the surface of the Earth,
    destroying and reshaping.  The followers of the Cult of XUDD saw it
    and knew: if it was not good, it was at least right; it was the
-   order of things as it was always meant to be.  Submit, and be
+   order of things as they were always meant to be.  Submit, and be
    awoken at last.
      -- The First Tome of XUDD, The Awakening: Section 23:8
 
