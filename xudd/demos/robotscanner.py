@@ -130,35 +130,19 @@ class WarehouseRoom(Actor):
         self.previous_room = message.body['id']
 
     def get_next_room(self, message):
-        self.send_message(
-            to=message.from_id,
-            directive=message.directive,
-            in_reply_to=message.id,
-            from_id=self.id,
-            body={"id": self.next_room})
+        message.reply(
+            {"id": self.next_room})
 
     def get_previous_room(self, message):
-        self.send_message(
-            to=message.from_id,
-            directive=message.directive,
-            in_reply_to=message.id,
-            from_id=self.id,
-            body={"id": self.previous_room})
+        message.reply(
+            {"id": self.previous_room})
 
     def list_droids(self, message):
-        self.send_message(
-            to=message.from_id,
-            directive=message.directive,
-            in_reply_to=message.id,
-            body={"droid_ids": self.droids})
+        message.reply(
+            {"droid_ids": self.droids})
 
     def register_droid(self, message):
         self.droids.append(message.body['droid_id'])
-        self.hive.send_message(
-            to=message.from_id,
-            in_reply_to=message.id,
-            directive="message_handled")
-
 
 
 class Droid(Actor):
@@ -185,31 +169,18 @@ class Droid(Actor):
             directive="register_droid",
             body={"droid_id": self.id})
 
-        self.send_message(
-            to=message.from_id,
-            directive="reply",
-            in_reply_to=message.id)
-
         _log.debug('Registered droid {0}!'.format(self.id))
 
     def infection_expose(self, message):
-        self.send_message(
-            to=message.from_id,
-            directive=message.directive,
-            from_id=self.id,
-            in_reply_to=message.id,
-            body={"is_infected": self.infected})
+        message.reply(
+            {"is_infected": self.infected})
 
     def get_shot(self, message):
         damage = random.randrange(0, 60)
         self.hp -= damage
         alive = self.hp > 0
 
-        self.send_message(
-            to=message.from_id,
-            in_reply_to=message.id,
-            directive=message.directive,
-            from_id=self.id,
+        message.reply(
             body={
                 "hp_left": self.hp,
                 "damage_taken": damage,

@@ -49,10 +49,7 @@ class Professor(Actor):
 
     def be_bothered(self, message):
         self.being_bothered.add(message.from_id)
-        self.hive.send_message(
-            to=message.from_id,
-            directive="response",
-            in_reply_to=message.id,
+        message.reply(
             body={"noise": "Hey! Stop it!"})
         print("%s: %s" % (self.id, random.choice(COMPLAINTS)))
 

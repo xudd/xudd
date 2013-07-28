@@ -80,12 +80,8 @@ class Assistant(Actor):
             {"run_errand": self.run_errand})
 
     def run_errand(self, message):
-        self.hive.send_message(
-            to=message.from_id,
-            directive="result",
-            in_reply_to=message.id,
-            body={
-                "did_your_grunt_work": True})
+        message.reply(
+            {"did_your_grunt_work": True})
 
 
 def main():
