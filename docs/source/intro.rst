@@ -100,7 +100,7 @@ application that has all of these components, but nicely combined:
   codebase.
 
 With XUDD, you could write this so that the HTTP/WSGI application
-components are handled by their own actors or a set of actors.  You
+components are handled by their own actor or a set of actors.  You
 wouldn't necessarily need to write this code differently than you
 already are... the WSGI application could pass off tasks to the task
 queuing actors via fire-and-forget messages (if you wanted coroutines
