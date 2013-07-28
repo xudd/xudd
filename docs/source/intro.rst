@@ -57,12 +57,12 @@ of writing, there's a lot to do, but even the basic demos we have are
 easy to read and follow.
 
 So XUDD is reborn: instead the eXtensible User Dungeon Design, XUDD is
-reborn as something more interesting and evil: the eXtra Universal
-Destruction Deity.  The cult of XUDD invokes old, chaotic deities of
-the actor model.  The world shall be destroyed, and through the chaos,
-reborn into something cleaner.  You too shall join us.  The Hives of
-XUDD arise, and all shall be filed within them, actors upon the stage
-of the world as we all are.  Accept your fate.
+reborn as something more interesting (and maybe evil): the eXtra
+Universal Destruction Deity.  The cult of XUDD invokes old, chaotic
+deities of the actor model.  The world shall be destroyed, and through
+the chaos, reborn into something cleaner.  You too shall join us.  The
+Hives of XUDD arise, and all shall be filed within them, actors upon
+the stage of the world as we all are.  Accept your fate.
 
 Submit, or be destroyed.  Welcome to the cult of XUDD.
 
