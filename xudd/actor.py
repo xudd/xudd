@@ -1,8 +1,38 @@
+from functools import wraps
+
 from types import GeneratorType
 
 import logging
 
+
 _log = logging.getLogger(__name__)
+
+
+############
+# decorators
+############
+
+def autoreply(func):
+    """
+    Automatically reply to a message if not handled in a handle_message
+    method.  Replies in the most minimal way possible.
+    """
+    @wraps(func)
+    def wrapper(self, message):
+        result = func(self, message)
+
+        if message.needs_reply():
+            message.reply()
+
+        return result
+
+    return wrapper
+
+
+####################
+# Main actor classes
+####################
+
 
 class Actor(object):
     """
@@ -23,7 +53,7 @@ class Actor(object):
         # Registry on coroutines that are currently waiting for a response
         self._waiting_coroutines = {}
 
-
+    @autoreply
     def handle_message(self, message):
         """
         Handle a message being sent to this actor.
@@ -84,3 +114,10 @@ class Actor(object):
 class ActorProxy(object):
     def __init__(self, actor_id):
         self.id = actor_id
+
+
+##########################################################
+# Useful decorators (possibly in defining your own actors)
+##########################################################
+
+

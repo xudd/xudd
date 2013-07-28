@@ -11,7 +11,7 @@ class Message(object):
         self.in_reply_to = in_reply_to
         self.wants_reply = wants_reply
 
-        self.replied_to = False
+        self.replied = False
         self.deferred_reply = False
         self.hive_proxy = hive_proxy
 
@@ -62,7 +62,7 @@ class Message(object):
         Returns True or False based on the value of
           self.needs_reply, self.deferred_reply, and self.replied
         """
-        return self.needs_reply and not (self.deferred_reply or self.replied)
+        return self.wants_reply and not (self.deferred_reply or self.replied)
 
     #######################################
     # Serializing and deserializing methods
