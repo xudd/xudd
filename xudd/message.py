@@ -15,10 +15,14 @@ class Message(object):
     **Args:**
 
     - **to:** the id of the receiving actor
-    - **directive:** what kind of action or request we're making of the
-      receiving actor.  Usually this is some kind of useful
-      instruction or request.  However, if we're just replying to
-      messages, frequently this directive is simply "reply".
+
+    - **directive:** what kind of action or request we're making of
+      the receiving actor.  Usually this is some kind of useful
+      instruction or request.  For example, we might be communicating
+      with a Dragon actor, and we might give it the directive
+      "breathe_fire", which a dragon actor knows how to handle.
+      However, if we're just replying to messages, frequently this
+      directive is simply "reply".
 
       In the future, there will also be a standardized set of common
       "error" directives :)
@@ -63,6 +67,7 @@ class Message(object):
       initializing the object, but you should attach this to the
       message.hive_proxy object before passing to the message queue of
       the actor.
+
     """
     def __init__(self, to, directive, from_id, id, body=None, in_reply_to=None,
                  wants_reply=False, hive_proxy=None):
