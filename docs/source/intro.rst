@@ -12,8 +12,9 @@ Introduction
 
    And so the followers saw themselves for what they were: actors upon
    the stage of the world.  As the Hives emerged, as if they had grown
-   out of the boils of the earth itself, they filed themselves within
-   them, ready to do their service to the greater colonies.
+   out of the boils of the earth itself, the followers filed
+   themselves within them, ready to do their service to the greater
+   colonies.  And they understood:
 
    Submit, and be awoken at last.
 
