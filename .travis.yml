@@ -1,0 +1,18 @@
+language: python
+python:
+  - "3.3"
+  - "2.7"
+
+# command to install dependencies
+install:
+ - python setup.py develop
+
+# # command to run tests
+script: nosetests
+notifications:
+  irc:
+    channels:
+      - "irc.freenode.net#xudd"
+    on_success: change
+    on_failure: change
+    use_notice: false
