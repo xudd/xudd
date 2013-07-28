@@ -97,37 +97,37 @@ scenario.
 
 You could break your game out like so:
 
- - Every player is an actor
- - Every NPC and uncollected item in the world is an actor
- - Every room is an actor, with references to the exits of each room.
+- Every player is an actor
+- Every NPC and uncollected item in the world is an actor
+- Every room is an actor, with references to the exits of each room.
 
-   Rooms keep track of the presence of players and
-   non-player-characters.  Every time such an actor enters a room, it
-   informs the room, which in turn subscribes to the "exit" event of
-   the character, and so is informed when the character exits.
+  Rooms keep track of the presence of players and
+  non-player-characters.  Every time such an actor enters a room, it
+  informs the room, which in turn subscribes to the "exit" event of
+  the character, and so is informed when the character exits.
 
- - If a character wants to see who's in the room and available for
-   actions, sends a message to the room asking who's there, and the
-   server submits a list of all such actor ids, from which the
-   character can request more information about properties from the
-   actors themselves.
+- If a character wants to see who's in the room and available for
+  actions, sends a message to the room asking who's there, and the
+  server submits a list of all such actor ids, from which the
+  character can request more information about properties from the
+  actors themselves.
 
- - Network communication is itself handled by actors, which pass
-   messages on to various player representation actors to allow them
-   to determine how to process the actions.
+- Network communication is itself handled by actors, which pass
+  messages on to various player representation actors to allow them
+  to determine how to process the actions.
 
- - If a character wants to submit some action upon another character,
-   such as an "attack" message, it submits that as a message, and the
-   character waits for a response.  Thanks to XUDD's usage of
-   coroutines, you don't need to split this process of sending a
-   message out and waiting for a response into multiple
-   functions... you can just `yield` until the character being
-   attacked lets you know whether you succeded in hitting them.
+- If a character wants to submit some action upon another character,
+  such as an "attack" message, it submits that as a message, and the
+  character waits for a response.  Thanks to XUDD's usage of
+  coroutines, you don't need to split this process of sending a
+  message out and waiting for a response into multiple
+  functions... you can just `yield` until the character being
+  attacked lets you know whether you succeded in hitting them.
 
- - Build every character and item from a base actor class which is
-   itself serializable.  Upon shutdown of the world, every character
-   serializes itself into an object store.  When the server is turned
-   back on, all characters can be restored, mostly as they were.
+- Build every character and item from a base actor class which is
+  itself serializable.  Upon shutdown of the world, every character
+  serializes itself into an object store.  When the server is turned
+  back on, all characters can be restored, mostly as they were.
 
 
 Distributed data crunching
