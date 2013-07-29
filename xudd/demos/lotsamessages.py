@@ -57,7 +57,7 @@ class Professor(Actor):
             {"run_experiments": self.run_experiments})
 
     def run_experiments(self, message):
-        """Run an errand... but really, this means asking your assistant
+        """Run an experiment... but really, this means asking your assistant
         to constantly do run stupid errands...
         """
         assistant = message.body['assistant_id']
