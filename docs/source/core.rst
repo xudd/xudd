@@ -112,12 +112,14 @@ You can see how this works in code:
 Sending messages from actor to actor
 ------------------------------------
 
+
+
+
 .. autoclass:: xudd.message.Message
 
 
 Message queues and the two types of actors
 ------------------------------------------
-
 
 Basic actors
 ~~~~~~~~~~~~
@@ -137,8 +139,19 @@ Replying to messages
 --------------------
 
 
+Hives
+
 Variants and meta-discussion
 ============================
+
+Hives
+-----
+
+
+The standard hive
+-----------------
+
+
 
 Variants on the standard Hive
 -----------------------------
