@@ -40,7 +40,7 @@ class Message(object):
       - If the message is just being sent for local actor to local
         actor, it's acceptable to pass along whatever, but keep in
         mind that you are effectively breaking any possibility of inter-hive
-        communication between these actors!  
+        communication between these actors!
       - If you are sending along ANY mutable structures, your actor
         must NEVER ACCESS THOSE OBJECTS AGAIN.  Not for reading, not
         for writing.  If you do otherwise, consider yourself breaking
@@ -84,8 +84,9 @@ class Message(object):
         self.hive_proxy = hive_proxy
 
     def __repr__(self):
-        return u"<{cls} #{id} {inreply}to={to} from={from_id}>".format(
+        return u"<{cls} #{id} {directive} {inreply}to={to} from={from_id}>".format(
             cls=self.__class__.__name__,
+            directive=self.directive,
             inreply='in-reply-to={in_reply_to} '.format(
                 in_reply_to=self.in_reply_to) if self.in_reply_to else '',
             to=self.to,
@@ -112,7 +113,7 @@ class Message(object):
             wants_reply=wants_reply,
             in_reply_to=self.id,
             body=body)
-            
+
         # Yup, we were replied to
         self.replied = True
 

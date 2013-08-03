@@ -143,5 +143,3 @@ class ActorProxy(object):
 ##########################################################
 # Useful decorators (possibly in defining your own actors)
 ##########################################################
-
-
