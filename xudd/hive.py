@@ -255,3 +255,6 @@ class HiveProxy(object):
 
     def send_shutdown(self, *args, **kwargs):
         return self._hive.send_shutdown(*args, **kwargs)
+
+    def gen_message_id(self, *args, **kwargs):
+        return self._hive.gen_message_id(*args, **kwargs)

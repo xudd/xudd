@@ -114,6 +114,26 @@ class Actor(object):
             body=body, in_reply_to=in_reply_to, id=id,
             wants_reply=True)
 
+    def wait_on_self(self):
+        """
+        Send a message that's actually just going to reply to itself!
+        Useful for while loops.
+        """
+        # Kinda evil.  This message is going to reply to itself, so
+        # it's actually generating its own id ahead of time...
+        this_message_id = self.hive.gen_message_id()
+
+        return self.hive.send_message(
+            to=self.id, directive="self_reply",
+            from_id=self.id,
+            id=this_message_id, in_reply_to=this_message_id,
+            # Okay, I know this is surprising...
+            #
+            # But since this message actually replies to itself, we
+            # don't want to trigger the auto-reply behavior!
+            # it is, by definition, already replying!
+            wants_reply=False)
+
 
 class ActorProxy(object):
     def __init__(self, actor_id):
