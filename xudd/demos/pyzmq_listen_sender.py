@@ -1,5 +1,5 @@
 """
-To be used with pyzmq_listen_test.py
+To be used with pyzmq_listen_listener.py
 
 Fire this up and you can start sending messages to the listener.
 """
