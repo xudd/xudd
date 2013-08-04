@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-import uuid
 import logging
 from collections import deque
 from threading import Thread
@@ -9,6 +8,7 @@ from itertools import count
 from xudd import PY2
 
 from xudd.message import Message
+from xudd.tools import base64_uuid
 
 _log = logging.getLogger(__name__)
 
@@ -35,10 +35,7 @@ class Hive(Thread):
         self.should_stop = False
 
         # Objects related to generating unique ids for messages
-        if PY2:
-            self.message_uuid = unicode(uuid.uuid4())
-        else:
-            self.message_uuid = str(uuid.uuid4())
+        self.message_uuid = base64_uuid()
 
         self.message_counter = count()
 
@@ -183,10 +180,7 @@ class Hive(Thread):
         """
         Generate an actor id.
         """
-        if PY2:
-            return unicode(uuid.uuid4())
-        else:
-            return str(uuid.uuid4())
+        return base64_uuid()
 
     def gen_message_id(self):
         """
