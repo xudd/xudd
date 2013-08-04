@@ -88,7 +88,11 @@ class Actor(object):
         # results into the coroutine registry
         if isinstance(result, GeneratorType):
             coroutine = result
-            message_id = result.send(None)
+            try:
+                message_id = result.send(None)
+            except StopIteration:
+                # Guess this coroutine ended without any yields
+                return None
 
             # since the coroutine returned a message_id that was sent,
             # we should both add this message's id to the registry
