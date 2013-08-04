@@ -63,7 +63,6 @@ class Hive(Thread):
             to=to, directive=directive, from_id=from_id, body=body,
             in_reply_to=in_reply_to, id=message_id, wants_reply=wants_reply)
 
-        _log.debug('send_message: {0}'.format(message))
         self.hive_action_queue.append(
             ("queue_message", message))
         return message_id

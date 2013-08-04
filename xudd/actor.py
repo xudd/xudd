@@ -66,8 +66,6 @@ class Actor(object):
 
             # Send this message reply to this coroutine
             try:
-                if _log.level <= logging.DEBUG:
-                    _log.debug('Sending reply {0}'.format(message))
                 message_id = coroutine.send(message)
             except StopIteration:
                 # And our job is done
