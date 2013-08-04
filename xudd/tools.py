@@ -4,7 +4,7 @@ import uuid
 from xudd import PY2
 
 
-def base64_uuid():
+def base64_uuid4():
     """
     Return a base64 encoded uuid4
     """

@@ -8,7 +8,7 @@ from itertools import count
 from xudd import PY2
 
 from xudd.message import Message
-from xudd.tools import base64_uuid
+from xudd.tools import base64_uuid4
 
 _log = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ class Hive(Thread):
         self.should_stop = False
 
         # Objects related to generating unique ids for messages
-        self.message_uuid = base64_uuid()
+        self.message_uuid = base64_uuid4()
 
         self.message_counter = count()
 
@@ -180,7 +180,7 @@ class Hive(Thread):
         """
         Generate an actor id.
         """
-        return base64_uuid()
+        return base64_uuid4()
 
     def gen_message_id(self):
         """
