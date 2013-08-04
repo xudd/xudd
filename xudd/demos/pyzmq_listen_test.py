@@ -26,7 +26,7 @@ class Listener(Actor):
 
     def listen_loop(self, message):
         while True:
-            if self.socket.poll(1) == 1:
+            if self.socket.poll(10) == 1:
                 self.hive.send_message(
                     to=message.body["echoer"],
                     directive="echo",
