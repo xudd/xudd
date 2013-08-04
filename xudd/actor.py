@@ -42,11 +42,6 @@ class Actor(object):
         self.hive = hive
         self.id = id
 
-        # Actors SHOULD NOT TOUCH their own message queue, generally.
-        # Let a worker thread do it.
-        # There may be exceptions, but those will be outlined later ;)
-        self.message_queue = hive.gen_message_queue()
-
         # Routing of messages to handler functions
         self.message_routing = {}
 

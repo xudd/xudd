@@ -2,7 +2,6 @@ from __future__ import print_function
 
 import logging
 from collections import deque
-from threading import Thread
 from itertools import count
 
 from xudd import PY2
@@ -13,39 +12,42 @@ from xudd.tools import base64_uuid4
 _log = logging.getLogger(__name__)
 
 
-class Hive(Thread):
+class Hive(object):
     """
     Hive handles all actors and the passing of messages between them.
 
     Inter-hive communication may exist in the future, it doesn't yet ;)
     """
-    def __init__(self, actor_messages_per_cycle=15):
+    def __init__(self):
         super(Hive, self).__init__()
 
+        # Which actors this hive is managing
         self._actor_registry = {}
 
-        # Actor queue
-        self._actor_queue = deque()
-        self._actors_in_queue = set()
+        # Messages to be processed
+        self._message_queue = deque()
 
         # This is actions for ourself to take, such as checking if an
         # actor should be re-queued, and queueing messages to an actor
         self.hive_action_queue = deque()
 
+        # Set this to True to break the current loop
         self.should_stop = False
 
         # Objects related to generating unique ids for messages
         self.message_uuid = base64_uuid4()
-
         self.message_counter = count()
 
-        # Maximum number of messags
-        self.actor_messages_per_cycle = actor_messages_per_cycle
-
     def register_actor(self, actor):
+        """
+        Register an actor on the hive
+        """
         self._actor_registry[actor.id] = actor
 
     def remove_actor(self, actor_id):
+        """
+        Remove an actor from the hive
+        """
         self._actor_registry.pop(actor_id)
 
     def send_message(self, to, directive,
@@ -63,117 +65,60 @@ class Hive(Thread):
             to=to, directive=directive, from_id=from_id, body=body,
             in_reply_to=in_reply_to, id=message_id, wants_reply=wants_reply)
 
-        self.hive_action_queue.append(
-            ("queue_message", message))
+        self._message_queue.append(message)
         return message_id
 
-    def request_possibly_requeue_actor(self, actor):
-        self.hive_action_queue.append(
-            ("check_queue_actor", actor))
-
-    def queue_message(self, message):
-        """
-        Queue a message to its appropriate actor.
-        """
-        try:
-            actor = self._actor_registry[message.to]
-        except KeyError:
-            # TODO:
-            #   In the future, if this fails, we should send a message back to
-            #   the original sender informing them of such
-            print(
-                "Wouldn't it be nice if we handled sending "
-                "messages to an actor that didn't exist more gracefully?")
-            return False
-
-        # Maybe not the most opportune place to attach this
-        message.hive_proxy = actor.hive
-
-        actor.message_queue.append(message)
-
-        self.request_possibly_requeue_actor(actor)
-
     def run(self):
-        self.workloop()
-
-    def gen_message_queue(self):
-        """Generate a message queue for an actor.
-
-        Note: in this case we're just returning a simple deque(), but hives
-        should actually be able to put more complicated queues (possibly
-        wrapper queues, see xudd/experimental/threaded_hive.py) on an actor.
-        It's up to the hive to decide what kind of queue is
-        appropriate... excepting in certain circumstances (such as
-        DedicatedActors, which don't exist at the time of writing this), actors
-        shouldn't be processing their own queues!
         """
-        return deque()
+        Run the hive's main loop.
+        """
+        while not self.should_stop:
+            # self._process_hive_actions()
+            self._process_messages()
+
+    def _process_messages(self):
+        """
+        Process however many messages are currently on the queue.
+        """
+        # Note: the reason we don't run through all messages till exhaustion
+        #   is so that the run() loop has an opportunity to process other hive
+        #   actions after we finish going through these present messages
+        for i in range(len(self._message_queue)):
+            message = self._message_queue.popleft()
+            try:
+                actor = self._actor_registry[message.to]
+            except IndexError:
+                # For some reason this actor wasn't found, so we may need to
+                # inform the original sender
+                _log.warning('recipient not found for message: {0}'.format(
+                    message))
+
+                self.return_to_sender(message)
+
+            # Maybe not the most opportune place to attach this
+            message.hive_proxy = actor.hive
+
+            # TODO: More error handling here! ;)
+            actor.handle_message(message)
+
+    def return_to_sender(self, message, directive="error.no_such_actor"):
+        """
+        Message could not be delivered; return to sender
+        (if they've requested a reply, that is.)
+        """
+        # If this message requests a reply, and the message sender
+        # isn't the intended recipient, let them know.
+        # (Yeah, actors sometimes message themselves.)
+        if message.wants_reply and message.from_id != message.to:
+            self.send_message(
+                to=message.from_id, directive=directive,
+                from_id="hive", in_reply_to=message.id)
 
     def gen_proxy(self):
+        """
+        Generate a HiveProxy for an actor.
+        """
         return HiveProxy(self)
-
-    def workloop(self):
-        # ... should we convert the hive to an actor that processes
-        # its own messages? ;)
-
-        # Process actions
-        while not self.should_stop:
-            self._process_hive_actions()
-            self._process_actor_messages()
-
-    def _process_hive_actions(self):
-        for i in range(len(self.hive_action_queue)):
-            try:
-                action = self.hive_action_queue.popleft()
-            except IndexError:
-                # no more hive actions to process
-                # ... this shouldn't happen though?
-                break
-
-            action_type = action[0]
-
-            # The actor just had their stuff processed... see if they
-            # should be put back on the actor queue
-            if action_type == "check_queue_actor":
-                actor = action[1]
-                # Should we requeue?
-                if not len(actor.message_queue) == 0 and \
-                   not actor in self._actors_in_queue:
-                    # Looks like so!
-                    self._actor_queue.append(actor)
-                    self._actors_in_queue.add(actor)
-
-            elif action_type == "queue_message":
-                message = action[1]
-                self.queue_message(message)
-
-            else:
-                raise UnknownHiveAction(
-                    "Unknown action: %s" % action_type)
-
-    def _process_actor_messages(self):
-        for i in range(len(self._actor_queue)):
-            actor = self._actor_queue.popleft()
-            self._actors_in_queue.remove(actor)
-
-            # Process messages from this actor
-            messages_processed = 0
-            while self.actor_messages_per_cycle is None \
-                  or messages_processed < self.actor_messages_per_cycle:
-                # Get a message off the message queue
-                try:
-                    message = actor.message_queue.popleft()
-                except IndexError:
-                    # No messages on the queue anyway, might as well break out
-                    # from this
-                    break
-
-                actor.handle_message(message)
-                messages_processed += 1
-
-            # mark for possible requeueing
-            self.request_possibly_requeue_actor(actor)
-
 
     def gen_actor_id(self):
         """
@@ -211,8 +156,44 @@ class Hive(Thread):
         # the actors a chance to wrap up business ;)
         self.should_stop = True
 
-
-class UnknownHiveAction(Exception): pass
+### TODO: We may or may not return to this, for now we have nothing
+###   that fits upon here.
+###   ... note that I HATE commented out blocks of code like this.
+###   However, we may be adding it back when dedicated actors reappear,
+###   hence it sitting here for the next week or so.
+###   THIS WILL NOT STAY COMMENTED OUT LIKE THIS
+#
+#      def _process_hive_actions(self):
+#          for i in range(len(self.hive_action_queue)):
+#              try:
+#                  action = self.hive_action_queue.popleft()
+#              except IndexError:
+#                  # no more hive actions to process
+#                  # ... this shouldn't happen though?
+#                  break
+#     
+#              action_type = action[0]
+#     
+#              # The actor just had their stuff processed... see if they
+#              # should be put back on the actor queue
+#              if action_type == "check_queue_actor":
+#                  actor = action[1]
+#                  # Should we requeue?
+#                  if not len(actor.message_queue) == 0 and \
+#                     not actor in self._actors_in_queue:
+#                      # Looks like so!
+#                      self._actor_queue.append(actor)
+#                      self._actors_in_queue.add(actor)
+#     
+#              elif action_type == "queue_message":
+#                  message = action[1]
+#                  self.queue_message(message)
+#     
+#              else:
+#                  raise UnknownHiveAction(
+#                      "Unknown action: %s" % action_type)
+#
+# class UnknownHiveAction(Exception): pass
 
 
 class HiveProxy(object):
@@ -241,9 +222,6 @@ class HiveProxy(object):
             to=to, directive=directive, from_id=from_id, body=body,
             in_reply_to=in_reply_to, id=id,
             wants_reply=wants_reply)
-
-    def gen_message_queue(self, *args, **kwargs):
-        return self._hive.gen_message_queue(*args, **kwargs)
 
     def remove_actor(self, *args, **kwargs):
         return self._hive.remove_actor(*args, **kwargs)
