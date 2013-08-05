@@ -20,6 +20,36 @@ Introduction
 
      -- The First Tome of XUDD, The Awakening: Section 23:8-10
 
+XUDD in a nutshell (tl;dr)
+==========================
+
+Here's the short of XUDD:
+
+- It's an actor model system
+- You can write code that (nearly) as easily scales out to multiple
+  processes on multiple machines as it does executing in the same
+  process on the same machine!
+- Communication happens via message passing.  Messages are dead
+  simple:
+
+.. code-block:: python
+
+  {"to": "to-actor-id",
+   "from-id": "from-actor-id",
+   "id": "this-message-id",
+   "wants-reply": True,
+   "directive": "fire_ze_missiles",
+   "body": {
+      "num_missiles": 200,
+      "targets": ["Kingdom of Wesnoth", "Antarctica", "Bloblandia"]}}
+
+- There's only three main concepts to XUDD: **actors**, **messages**,
+  and **hives** (which manage the actors)
+- Thanks to clever use of coroutines, you can write asynchronous code
+  that's easy to read.
+- XUDD stands for the cult of the eXtra Universal Destruction Deity.
+  Submit, or be destroyed.
+
 
 Why XUDD?
 =========
