@@ -8,18 +8,30 @@ from xudd import PY2
 
 from xudd.message import Message
 from xudd.tools import base64_uuid4
+from xudd.actor import Actor
 
 _log = logging.getLogger(__name__)
 
 
-class Hive(object):
+class Hive(Actor):
     """
     Hive handles all actors and the passing of messages between them.
 
     Inter-hive communication may exist in the future, it doesn't yet ;)
+
+    Note: Even though this descends from actor it does not have the
+      same invocation pattern... it supplies its own hive proxy (to
+      itself!)
+
+    TODO: This docstring sucks ;)
     """
-    def __init__(self):
-        super(Hive, self).__init__()
+    def __init__(self, hive_id=None):
+        super(Hive, self).__init__(
+            id="hive",
+            hive=self.gen_proxy())
+
+        # id of the hive
+        self.hive_id = self.gen_actor_id()
 
         # Which actors this hive is managing
         self._actor_registry = {}
@@ -44,7 +56,8 @@ class Hive(object):
         """
         if actor.id in self._actor_registry:
             raise KeyError("Actor with that id already registered")
-        elif actor.id == "hive":
+        elif actor.id == "hive" and actor != self:
+            # Only the hive itself can get this id!
             raise KeyError("The actor id 'hive' is reserved")
 
         self._actor_registry[actor.id] = actor
