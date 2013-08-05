@@ -26,9 +26,11 @@ class Hive(Actor):
     TODO: This docstring sucks ;)
     """
     def __init__(self, hive_id=None):
+        hive_proxy = self.gen_proxy()
         super(Hive, self).__init__(
             id="hive",
-            hive=self.gen_proxy())
+            hive=hive_proxy)
+        hive_proxy.associate_with_actor(self)
 
         # id of the hive
         self.hive_id = self.gen_actor_id()
@@ -49,6 +51,9 @@ class Hive(Actor):
         # Objects related to generating unique ids for messages
         self.message_uuid = base64_uuid4()
         self.message_counter = count()
+
+        # Register ourselves on... ourselves ;)
+        self.register_actor(self)
 
     def register_actor(self, actor):
         """
