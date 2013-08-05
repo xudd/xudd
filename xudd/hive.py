@@ -42,6 +42,11 @@ class Hive(object):
         """
         Register an actor on the hive
         """
+        if actor.id in self._actor_registry:
+            raise KeyError("Actor with that id already registered")
+        elif actor.id == "hive":
+            raise KeyError("The actor id 'hive' is reserved")
+
         self._actor_registry[actor.id] = actor
 
     def remove_actor(self, actor_id):
