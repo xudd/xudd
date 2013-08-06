@@ -3,7 +3,6 @@ from functools import wraps
 from types import GeneratorType
 
 import logging
-import inspect
 
 
 _log = logging.getLogger(__name__)
