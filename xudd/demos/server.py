@@ -4,8 +4,6 @@ import logging
 import select
 import socket
 
-from wsgiref.simple_server import WSGIRequestHandler
-
 from tornado import httputil
 
 from xudd.actor import Actor, super_init
@@ -35,14 +33,14 @@ class Server(Actor):
                 [self.socket],
                 [],
                 [],
-                .0000001)
+                .0000001)  # XXX: This will surely make it fast! (?)
 
             if readable:
                 _log.info('Got new request ({0} in local index)'.format(len(self.requests)))
                 req = self.socket.accept()
 
                 # Use the message id as the internal id for the request
-                request_id = self.wait_on_message(
+                message_id = self.send_message(
                     to='http',
                     directive='handle_request',
                     body={
@@ -53,7 +51,7 @@ class Server(Actor):
                 _log.debug('Sent request to worker')
 
                 self.requests.update({
-                    request_id: req
+                    message_id: req
                 })
 
             yield self.wait_on_self()
@@ -72,8 +70,7 @@ class HTTPHandler(Actor):
     @super_init
     def __init__(self, hive, id):
         self.message_routing.update({
-            'handle_request': self.handle_request,
-            'self_reply': lambda x: x
+            'handle_request': self.handle_request
         })
 
     def handle_request(self, message):
@@ -83,26 +80,47 @@ class HTTPHandler(Actor):
             r, w, e = select.select([sock], [], [], .0001)
 
             if not r:
-                self.wait_on_self()
+                yield self.wait_on_self()
             else:
                 first_data = sock.recv(8192)
 
-                request_line, rest = first_data.split('\r\n', 1)
+                # XXX: Sometimes first_data is zero-length when running
+                # `ab -n 10000 -c 500 URI` against the server, this block
+                # catches those cases, but I'm still not sure why they occur.
+                try:
+                    request_line, rest = first_data.split('\r\n', 1)
 
-                http_headers, rest = rest.split('\r\n\r\n', 1)
+                    http_headers, rest = rest.split('\r\n\r\n', 1)
 
-                headers = httputil.HTTPHeaders.parse(http_headers)
+                    headers = httputil.HTTPHeaders.parse(http_headers)
 
-                _log.info('headers: {0}'.format(headers))
+                    _log.info('headers: {0}'.format(headers))
+                except Exception:
+                    _log.error('Failed to parse request: ' + first_data)
+                    message.reply(
+                        directive='respond',
+                        body={
+                            'response': 'HTTP/1.1 400 Invalid Request\r\n'
+                                'Connection: close'
+                        })
+                    break  # Don't try to parse the request any further as
+                           # we've already replied with a 400
+
+                response = yield self.wait_on_message(
+                    to='wsgi',
+                    directive='handle_request',
+                    body={
+                        'headers': headers,
+                        'body': rest
+                    })
 
                 message.reply(
                     directive='respond',
                     body={
-                        'response': 'HTTP/1.1 200 OK\r\nConnection: close\r\n'
+                        'response': response.body.get('response')
                     })
 
                 break
-
 
 
 class WSGI(Actor):
@@ -141,8 +159,8 @@ def main():
 
     server_id = hive.create_actor(Server, id='server')
 
-    wsgi_id = hive.create_actor(WSGI, id='wsgi')
-    http_id = hive.create_actor(HTTPHandler, id='http')
+    hive.create_actor(HTTPHandler, id='http')
+    hive.create_actor(WSGI, id='wsgi')
 
     hive.send_message(to='server', directive='listen')
 
