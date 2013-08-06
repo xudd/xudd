@@ -3,6 +3,7 @@ from functools import wraps
 from types import GeneratorType
 
 import logging
+import inspect
 
 
 _log = logging.getLogger(__name__)
@@ -138,3 +139,12 @@ class ActorProxy(object):
 ##########################################################
 # Useful decorators (possibly in defining your own actors)
 ##########################################################
+
+def super_init(init_func):
+    @wraps(init_func)
+    def super_init_wrapper(self, hive, id, *args, **kw):
+        super(self.__class__, self).__init__(hive, id)
+
+        return init_func(self, hive, id, *args, **kw)
+
+    return super_init_wrapper

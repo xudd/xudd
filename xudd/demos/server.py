@@ -4,58 +4,59 @@ import logging
 import select
 import socket
 
-from SocketServer import TCPServer
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+from wsgiref.simple_server import WSGIRequestHandler
 
-from xudd.actor import Actor
+from tornado import httputil
+
+from xudd.actor import Actor, super_init
 from xudd.hive import Hive
 
 _log = logging.getLogger(__name__)
 
 
 class Server(Actor):
+    @super_init
     def __init__(self, hive, id):
-        super(self.__class__, self).__init__(hive, id)
         self.message_routing.update({
             'respond': self.respond,
-            'listen': self.listen,
-            'select': self.select
+            'listen': self.listen
         })
         self.requests = {}
 
     def listen(self, message):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.setblocking(0)  # XXX: Don't know if this helps much
         self.socket.bind(('', 8000))
         self.socket.listen(1024)
 
-        self.send_message(to=self.id, directive='select')
+        while True:
+            readable, writable, errored = select.select(
+                [self.socket],
+                [],
+                [],
+                .0000001)
 
-    def select(self, message):
-        readable, writable, errored = select.select(
-            [self.socket],
-            [],
-            [],
-            .0000001)
+            if readable:
+                _log.info('Got new request ({0} in local index)'.format(len(self.requests)))
+                req = self.socket.accept()
 
-        if readable:
-            _log.info('Got new request ({0} in local index)'.format(len(self.requests)))
-            req = self.socket.accept()
-            message_id = self.wait_on_message(
-                to='wsgi',
-                directive='handle_request',
-                body={
-                    'request': req
-                }
-            )
+                # Use the message id as the internal id for the request
+                request_id = self.wait_on_message(
+                    to='http',
+                    directive='handle_request',
+                    body={
+                        'request': req
+                    }
+                )
 
-            _log.debug('Sent request to worker')
+                _log.debug('Sent request to worker')
 
-            self.requests.update({
-                message_id: req
-            })
+                self.requests.update({
+                    request_id: req
+                })
 
-        self.send_message(to=self.id, directive='select')
+            yield self.wait_on_self()
 
     def respond(self, message):
         _log.debug('Responding')
@@ -67,31 +68,62 @@ class Server(Actor):
         _log.info('Responded')
 
 
-class WSGI(Actor):
+class HTTPHandler(Actor):
+    @super_init
     def __init__(self, hive, id):
-        super(self.__class__, self).__init__(hive, id)
+        self.message_routing.update({
+            'handle_request': self.handle_request,
+            'self_reply': lambda x: x
+        })
+
+    def handle_request(self, message):
+        sock, bind = message.body['request']
+
+        while True:
+            r, w, e = select.select([sock], [], [], .0001)
+
+            if not r:
+                self.wait_on_self()
+            else:
+                first_data = sock.recv(8192)
+
+                request_line, rest = first_data.split('\r\n', 1)
+
+                http_headers, rest = rest.split('\r\n\r\n', 1)
+
+                headers = httputil.HTTPHeaders.parse(http_headers)
+
+                _log.info('headers: {0}'.format(headers))
+
+                message.reply(
+                    directive='respond',
+                    body={
+                        'response': 'HTTP/1.1 200 OK\r\nConnection: close\r\n'
+                    })
+
+                break
+
+
+
+class WSGI(Actor):
+    @super_init
+    def __init__(self, hive, id):
         self.message_routing.update({
             'handle_request': self.handle_request
         })
 
     def handle_request(self, message):
         _log.info('Got request')
-        sock, bind = message.body['request']
-        r, w, e = select.select([sock], [], [], 5)
 
-        if not r:
-            raise Exception('Timeout')
-
-        _log.debug(sock.recv(8192))
         message.reply(
             directive='respond',
             body={
-                'response': '''HTTP/1.1 200 OK\r\nConnection: close\r\n'''
+                'response': 'HTTP/1.1 200 OK\r\nConnection: close\r\n'
             })
 
 class WebSocketHandler(Actor):
+    @super_init
     def __init__(self, hive, id):
-        super(self.__class__, self).__init__(hive, id)
         self.message_routing.update({
             'handle_request': self.handle_request
         })
@@ -100,26 +132,33 @@ class WebSocketHandler(Actor):
         pass
 
 def main():
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
+
+    logging.getLogger('xudd.hive').setLevel(logging.INFO)
+    logging.getLogger('xudd.actor').setLevel(logging.INFO)
 
     hive = Hive()
 
     server_id = hive.create_actor(Server, id='server')
 
     wsgi_id = hive.create_actor(WSGI, id='wsgi')
+    http_id = hive.create_actor(HTTPHandler, id='http')
 
     hive.send_message(to='server', directive='listen')
 
     try:
         hive.run()
     finally:
-        _log.info('Closing sockets')
-        server = hive._actor_registry[server_id]
-        server.socket.close()
-        for key, val in server.requests.iteritems():
-            sock, bind = val
+        try:
+            _log.info('Closing sockets')
+            server = hive._actor_registry[server_id]
+            server.socket.close()
+            for key, val in server.requests.iteritems():
+                sock, bind = val
 
-            sock.close()
+                sock.close()
+        except Exception as e:
+            print(e)
 
 if __name__ == '__main__':
     main()
