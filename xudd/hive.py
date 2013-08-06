@@ -196,9 +196,9 @@ class Hive(Actor):
 #                  # no more hive actions to process
 #                  # ... this shouldn't happen though?
 #                  break
-#     
+#
 #              action_type = action[0]
-#     
+#
 #              # The actor just had their stuff processed... see if they
 #              # should be put back on the actor queue
 #              if action_type == "check_queue_actor":
@@ -209,11 +209,11 @@ class Hive(Actor):
 #                      # Looks like so!
 #                      self._actor_queue.append(actor)
 #                      self._actors_in_queue.add(actor)
-#     
+#
 #              elif action_type == "queue_message":
 #                  message = action[1]
 #                  self.queue_message(message)
-#     
+#
 #              else:
 #                  raise UnknownHiveAction(
 #                      "Unknown action: %s" % action_type)
