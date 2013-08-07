@@ -5,6 +5,7 @@ import logging
 import select
 import socket
 import traceback
+import urlparse
 
 from tornado import httputil, httpserver, escape
 
@@ -84,6 +85,10 @@ class HTTPHandler(Actor):
         })
 
     def handle_request(self, message):
+        '''
+        Much of the code for parsing HTTP is inspired by the tornado framweork
+        <http://tornadoweb.org>.
+        '''
         sock, bind = message.body['request']
 
         while True:
@@ -242,11 +247,16 @@ class WSGI(Actor):
 
         options = message.body.get('options')
 
+        uri_parts = urlparse.urlparse(''.join([
+            'http://fake.example',
+            options.get('uri')
+        ]))
+
         environ = {
             'REQUEST_METHOD': options.get('method'),
             'SCRIPT_NAME': '',
-            'PATH_INFO': escape.url_unescape(options.get('uri')),
-            'QUERY_STRING': '',
+            'PATH_INFO': escape.url_unescape(uri_parts.path),
+            'QUERY_STRING': uri_parts.query,
             "REMOTE_ADDR": options.get('remote_ip'),
             "SERVER_NAME": options.get('server_name'),
             "SERVER_PORT": str(options.get('port')),
