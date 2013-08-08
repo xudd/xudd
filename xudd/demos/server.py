@@ -7,7 +7,7 @@ import socket
 import traceback
 import urlparse
 
-from tornado import httputil, httpserver, escape
+from tornado import httputil, escape
 
 try:
     from io import BytesIO # python 3
@@ -32,11 +32,16 @@ class Server(Actor):
         self.requests = {}
 
     def listen(self, message):
+        body = message.body
+
+        port = body.get('port', 8000)
+        host = body.get('host', '127.0.0.1')
+
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.setblocking(0)  # XXX: Don't know if this helps much
-        self.socket.bind(('', 8000))
-        self.socket.listen(1024)
+        self.socket.bind((host, port))
+        self.socket.listen(5)  # Max 5 connections in queue
 
         while True:
             readable, writable, errored = select.select(
