@@ -86,9 +86,15 @@ class WSGI(Actor):
 
         app_return_value = self.wsgi_app(environ, start_response)
 
-        if not app_return_value is None and len(app_return_value):
-            for i in app_return_value:
-                response.append(i)
+        if app_return_value is not None:
+            try:
+                response_iterator = iter(app_return_value)
+                for i in response_iterator:
+                    response.append(i)
+            except TypeError as exc:
+                _log.error('response: {0}; error: {1}'.format(
+                    response_iterator,
+                    traceback.format_exc()))
 
         _log.info('response: {0}'.format(response))
 
