@@ -14,7 +14,7 @@ class DepartmentChair(Actor):
     and sends information about what's going on back to the user.
     """
     def __init__(self, hive, id):
-        super(self.__class__, self).__init__(hive, id)
+        super(DepartmentChair, self).__init__(hive, id)
 
         self.message_routing.update(
             {"oversee_experiments": self.oversee_experiments,
@@ -51,7 +51,7 @@ class DepartmentChair(Actor):
 
 class Professor(Actor):
     def __init__(self, hive, id):
-        super(self.__class__, self).__init__(hive, id)
+        super(Professor, self).__init__(hive, id)
 
         self.message_routing.update(
             {"run_experiments": self.run_experiments})
@@ -74,7 +74,7 @@ class Professor(Actor):
 
 class Assistant(Actor):
     def __init__(self, hive, id):
-        super(self.__class__, self).__init__(hive, id)
+        super(Assistant, self).__init__(hive, id)
 
         self.message_routing.update(
             {"run_errand": self.run_errand})

@@ -40,7 +40,7 @@ class Overseer(Actor):
     and sends information about what's going on back to the user.
     """
     def __init__(self, hive, id):
-        super(self.__class__, self).__init__(hive, id)
+        super(Overseer, self).__init__(hive, id)
 
         self.message_routing.update(
             {"init_world": self.init_world,

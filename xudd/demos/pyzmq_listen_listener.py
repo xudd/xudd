@@ -13,7 +13,7 @@ from xudd.actor import Actor
 
 class Listener(Actor):
     def __init__(self, hive, id):
-        super(self.__class__, self).__init__(hive, id)
+        super(Listener, self).__init__(hive, id)
         self.message_routing.update(
             {"listen_loop": self.listen_loop})
 
@@ -39,7 +39,7 @@ class Listener(Actor):
 
 class Echoer(Actor):
     def __init__(self, hive, id):
-        super(self.__class__, self).__init__(hive, id)
+        super(Echoer, self).__init__(hive, id)
         self.message_routing.update(
             {"echo": self.echo})
 

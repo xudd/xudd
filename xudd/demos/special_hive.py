@@ -13,7 +13,7 @@ class SpecialHive(Hive):
     A hive with an extra message handler on it!
     """
     def __init__(self, *args, **kwargs):
-        super(self.__class__, self).__init__(*args, **kwargs)
+        super(SpecialHive, self).__init__(*args, **kwargs)
 
         self.message_routing.update(
             {"be_fanboyed": self.be_fanboyed})
@@ -38,7 +38,7 @@ class FanBoy(Actor):
     hear back from the hive.  Some words of wisdom would be a bonus!
     """
     def __init__(self, hive, id):
-        super(self.__class__, self).__init__(hive, id)
+        super(Actor, self).__init__(hive, id)
         self.message_routing.update(
             {"nerd_out_to_hive": self.nerd_out_to_hive})
 

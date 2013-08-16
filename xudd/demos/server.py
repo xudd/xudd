@@ -14,7 +14,7 @@ try:
 except ImportError:
     from cStringIO import StringIO as BytesIO # python 2
 
-from xudd.actor import Actor, super_init
+from xudd.actor import Actor
 from xudd.hive import Hive
 
 _log = logging.getLogger(__name__)
@@ -23,8 +23,8 @@ MAX_REQUEST_SIZE = 10 * 1024 * 1024  # 10M
 
 
 class Server(Actor):
-    @super_init
     def __init__(self, hive, id):
+        super(Server, self).__init__(hive, id)
         self.message_routing.update({
             'respond': self.respond,
             'listen': self.listen
@@ -82,8 +82,8 @@ class Server(Actor):
 
 
 class HTTPHandler(Actor):
-    @super_init
     def __init__(self, hive, id):
+        super(HTTPHandler, self).__init__(hive, id)
         self.message_routing.update({
             'handle_request': self.handle_request,
             'handle_request_body': self.handle_request_body
@@ -234,8 +234,8 @@ class HTTPHandler(Actor):
 
 
 class WSGI(Actor):
-    @super_init
     def __init__(self, hive, id):
+        super(WSGI, self).__init__(hive, id)
         self.message_routing.update({
             'handle_request': self.handle_request
         })
@@ -309,8 +309,8 @@ class WSGI(Actor):
 
 
 class WebSocketHandler(Actor):
-    @super_init
     def __init__(self, hive, id):
+        super(WebSocketHandler, self).__init__(hive, id)
         self.message_routing.update({
             'handle_request': self.handle_request
         })

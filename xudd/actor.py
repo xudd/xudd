@@ -133,17 +133,3 @@ class Actor(object):
 class ActorProxy(object):
     def __init__(self, actor_id):
         self.id = actor_id
-
-
-##########################################################
-# Useful decorators (possibly in defining your own actors)
-##########################################################
-
-def super_init(init_func):
-    @wraps(init_func)
-    def super_init_wrapper(self, hive, id, *args, **kw):
-        super(self.__class__, self).__init__(hive, id)
-
-        return init_func(self, hive, id, *args, **kw)
-
-    return super_init_wrapper

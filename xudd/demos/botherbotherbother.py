@@ -11,7 +11,7 @@ from xudd.actor import Actor
 
 class Student(Actor):
     def __init__(self, hive, id):
-        super(self.__class__, self).__init__(hive, id)
+        super(Student, self).__init__(hive, id)
         self.message_routing.update(
             {"bother_professor": self.bother_professor,
              "avada_kedavra": self.avada_kedavraed})
@@ -40,7 +40,7 @@ COMPLAINTS = ["Hey!", "Stop that!", "Ooof!"]
 
 class Professor(Actor):
     def __init__(self, hive, id):
-        super(self.__class__, self).__init__(hive, id)
+        super(Professor, self).__init__(hive, id)
 
         self.message_routing.update(
             {"be_bothered": self.be_bothered})
