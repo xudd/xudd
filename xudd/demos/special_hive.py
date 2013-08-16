@@ -38,7 +38,7 @@ class FanBoy(Actor):
     hear back from the hive.  Some words of wisdom would be a bonus!
     """
     def __init__(self, hive, id):
-        super(Actor, self).__init__(hive, id)
+        super(FanBoy, self).__init__(hive, id)
         self.message_routing.update(
             {"nerd_out_to_hive": self.nerd_out_to_hive})
 
