@@ -118,20 +118,96 @@ What is an actor, anyway?
 Instantiating actors
 --------------------
 
+Instantiating an actor is easy.  You can use a reference to the hive
+to actually initialize an actor, like so:
+
+.. code-block:: python
+
+    hive = Hive()
+
+    # Create an actor with no additional parameters
+    evil_bot = hive.create_actor(
+        EvilRobot)
+
+    # Create an actor with specific arguments and keyword arguments
+    # in this case, the first argument is the BattleBot's infrantry rank
+    minion_bot = hive.create_actor(
+        BattleBot, "minion",
+        weapons=["pokey stick"])
+
+    # We can also assign an explicit id, as long as it's unique, and not "hive"
+    # (that's reserved for the hive)
+    admiral_bot = hive.create_actor(
+        BattleBot, "admiral",
+        weapons=["missiles", "spears", "deathray"],
+        id="admiral_robo")
+
+In each case, the value returned by hive.create_actor is not the actor
+itself, but an id (a unicode string) that the actor can later be
+messaged with.
+
 The core properties of an actor
 -------------------------------
+
+Technically, an actor is only *required* to have the following properties:
+
+1. It should accept two positional arguments: hive, and id.  (It may
+   accept more arguments and keyword arguments during construction
+   than this, but it *must* accept these as the first two arguments!)
+  - **hive:** A HiveProxy object.  This is what the actor uses to
+    communicate back to the Hive itself.  (Note: this isn't the same
+    thing as the hive itself... it's a proxy object.  Actors shouldn't
+    be able to access all the properties and methods of their hive.
+    The HiveProxy provides a universal API.)
+  - **id:** The id of the actor.  The actor need not supply these
+    manually, it will be provided for it by the hive (and possibly by
+    whatever initializes the actor).
+
+2. It should have a method called `handle_message`.  Accepts a single
+   argument, "message", which is a :ref:`message object <message_objects>`.  
+   It should examine the `directive` and other parameters (such as
+   `in_reply_to`) to determine how to most appropriately handle the message.
+
+   The default actor provides a robust `handle_message` implementation
+   that handles passing messages off to various
+   :ref:`message handlers <handling_messages>`, as well as features such
+   as automatically :ref:`replying to mesages <replying_to_messages>`.
+
 
 On actor communication
 ----------------------
 
 
+.. _handling_messages:
+
+Handling messages
+-----------------
+
+
+
+
 Messages
 ========
 
-Sending messages from actor to actor
-------------------------------------
+A bit on messages
+-----------------
+
+Messages
+
+.. _message_objects:
+
+The message object
+~~~~~~~~~~~~~~~~~~
+
+
 
 .. autoclass:: xudd.message.Message
+
+
+
+
+Sending messages from actor to actor
+------------------------------------
 
 
 Message queues and the two types of actors
@@ -148,8 +224,7 @@ Dedicated actors
 Yielding for replies
 --------------------
 
-
-.. _replying-to-messages:
+.. _replying_to_messages:
 
 Replying to messages
 --------------------
