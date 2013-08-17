@@ -5,6 +5,9 @@ Core design
 High level overview
 ===================
 
+Summary of actors, messages, and hives
+--------------------------------------
+
 This document focuses on XUDD's core design.  XUDD follows the actor
 model.  The high level of this is that 
 
@@ -53,6 +56,7 @@ There are three essential components to XUDD's design:
   actor, intializing new actors, or requesting shutdown of the hive
   and all actors.
 
+
 These concepts are expanded on later in this document.  Additional
 features/components that are planned as part of XUDD's design (some of
 these are yet to be implemented):
@@ -63,12 +67,8 @@ these are yet to be implemented):
 - **Property API:**
 - **Actor serialization:**
 
-
-Detailed design
-===============
-
-Actors, hives, and other actors
--------------------------------
+Tying it all together
+---------------------
 
 So, the above explains the relationships between actors, messaging,
 and hives.  
@@ -109,11 +109,27 @@ You can see how this works in code:
 .. todo:: Add this code
 
 
+Actors
+======
+
+What is an actor, anyway?
+-------------------------
+
+Instantiating actors
+--------------------
+
+The core properties of an actor
+-------------------------------
+
+On actor communication
+----------------------
+
+
+Messages
+========
+
 Sending messages from actor to actor
 ------------------------------------
-
-
-
 
 .. autoclass:: xudd.message.Message
 
@@ -129,28 +145,38 @@ Basic actors
 Dedicated actors
 ~~~~~~~~~~~~~~~~
 
-
 Yielding for replies
 --------------------
+
 
 .. _replying-to-messages:
 
 Replying to messages
 --------------------
 
+Explicitly replying
+~~~~~~~~~~~~~~~~~~~
+
+The auto-reply mechanism
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Deferring your reply
+~~~~~~~~~~~~~~~~~~~~
+
 
 Hives
+=====
 
-Variants and meta-discussion
-============================
+Hive-level overview
+-------------------
 
-Hives
------
+The hive is itself an actor!
+----------------------------
 
+If your mind just exploded, that's okay.  Take a moment to allow it to
+reassemble.  Minds have a way of being able to do that.
 
-The standard hive
------------------
-
+The way this works is a bit tricky to think about, but the cool
 
 
 Variants on the standard Hive
