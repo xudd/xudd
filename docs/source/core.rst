@@ -230,7 +230,7 @@ Basic actors
 Dedicated actors
 ~~~~~~~~~~~~~~~~
 
-.. _yielding_for_replies
+.. _yielding_for_replies:
 
 Yielding for replies
 --------------------
