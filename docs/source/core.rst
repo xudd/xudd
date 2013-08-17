@@ -170,8 +170,17 @@ Technically, an actor is only *required* to have the following properties:
 
    The default actor provides a robust `handle_message` implementation
    that handles passing messages off to various
-   :ref:`message handlers <handling_messages>`, as well as features such
-   as automatically :ref:`replying to mesages <replying_to_messages>`.
+   :ref:`message handlers <handling_messages>`, permitting message handlers
+   to "suspend" themselves via coroutines while they
+   :ref:`yield in wait for replies <hielding_for_replies>`, as well as
+   features such as automatically
+   :ref:`replying to mesages <replying_to_messages>`.
+   Your actor does not have to use this logic, though it's recommended
+   that if you do deviate from the patterns in the basic actor's
+   `handle_message`, do so with care!  There are safeguards there to make
+   sure that actors waiting on replies are less likely to keep
+   coroutines in waiting forever in case your actor doesn't make an
+   explicit reply!
 
 
 On actor communication
@@ -220,6 +229,8 @@ Basic actors
 
 Dedicated actors
 ~~~~~~~~~~~~~~~~
+
+.. _yielding_for_replies
 
 Yielding for replies
 --------------------
