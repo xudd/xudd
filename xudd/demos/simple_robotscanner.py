@@ -40,8 +40,6 @@ class Overseer(Actor):
         """
         Initialize the world we're operating in for this demo.
         """
-        # DEBUG
-
         # Create room and droids
         room = self.hive.create_actor(WarehouseRoom)
         
