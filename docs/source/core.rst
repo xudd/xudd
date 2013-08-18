@@ -1,3 +1,5 @@
+.. _core-design:
+
 ===========
 Core design
 ===========

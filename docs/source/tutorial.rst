@@ -330,6 +330,8 @@ back to `list_droids` later when we build our SecurityRobot.
 Building the worker droids
 ==========================
 
+Now to add the droids!
+
 .. code-block:: python
 
     class Droid(Actor):
@@ -373,17 +375,222 @@ Building the worker droids
             if not alive:
                 self.hive.remove_actor(self.id)
 
+As you can see, the droid accepts some constructor arguments about its
+room, its id, and whether or not it's infected and keeps track of
+these states itself.
 
+`register_with_room` should be fairly obvious by now in how it works.
+The only surprising thing is possibly that this message yields on a
+reply, but the room's "register_droid" method that we built earlier
+never explicitly replies!  How does this work?  Again, XUDD includes
+some smart behavior so that messages which "expect" replies should
+generally get one assuming the other actor handles their
+message... even if it doesn't bother to construct an explicit reply!
+See :ref:`replying_to_messages` for details.
+
+Other than that, the only new thing here is the `hive.remove_actor()`
+component of the `get_shot` method.  Yes, it does exactly what it
+sounds like... it takes that actor off the hive.
 
 
 Building the security robot
 ===========================
 
-Connect everything together and run!
-====================================
+Now that we've gone through the above, we should have all the
+information we need to understand the `SecurityRobot` class!
+
+.. code-block:: python
+
+    ALIVE_FORMAT = "Droid %s shot; taken %s damage. Still alive... %s hp left."
+    DEAD_FORMAT = "Droid %s shot; taken %s damage. Terminated."
+    
+    
+    class SecurityRobot(Actor):
+        """
+        Security robot... designed to seek out and destroy infected droids.
+        """
+        def __init__(self, hive, id):
+            super(SecurityRobot, self).__init__(hive, id)
+    
+            # The room we're currently in
+            self.room = None
+    
+            self.message_routing.update(
+                {"begin_mission": self.begin_mission})
+    
+        def __droid_status_format(self, shot_response):
+            if shot_response.body["alive"]:
+                return ALIVE_FORMAT % (
+                    shot_response.from_id,
+                    shot_response.body["damage_taken"],
+                    shot_response.body["hp_left"])
+            else:
+                return DEAD_FORMAT % (
+                    shot_response.from_id,
+                    shot_response.body["damage_taken"])
+    
+        def begin_mission(self, message):
+            self.room = message.body['room']
+    
+            print("Entering room %s..." % self.room)
+    
+            # Find all the droids in this room and exterminate the
+            # infected ones.
+            response = yield self.wait_on_message(
+                to=self.room,
+                directive="list_droids")
+            for droid_id in response.body["droid_ids"]:
+                response = yield self.wait_on_message(
+                    to=droid_id,
+                    directive="infection_expose")
+    
+                # If the droid is clean, let the overseer know and move on.
+                if not response.body["is_infected"]:
+                    print("%s is clean... moving on." % droid_id)
+                    continue
+    
+                # Let the overseer know we found an infected droid
+                # and are engaging
+                print("%s found to be infected... taking out" % droid_id)
+    
+                # Keep firing till it's dead.
+                infected_droid_alive = True
+                while infected_droid_alive:
+                    response = yield self.wait_on_message(
+                        to=droid_id,
+                        directive="get_shot")
+    
+                    # Relay the droid status
+                    print(self.__droid_status_format(response))
+    
+                    infected_droid_alive = response.body["alive"]
+    
+            # Good job everyone! Shut down the operation.
+            print("Mission accomplished.")
+            self.hive.send_shutdown()
+
+While complex looking, there's very little here we haven't seen before
+already, though there are a couple of things!  A quick summary of the
+behavior of begin_mission:
+
+- It starts out pulling the room it is supposed to operate in based
+  off of the room supplied in the message argument's body.
+- It then sends a message to that room asking for a list of all droids
+  within said room.
+- It then checks each droid in the returned list:
+  - First it sees if the droid is infected (this is a bit abstract of
+    course anyway; presume the SecurityRobot is sending some code that
+    exposes that information if you like to think of this as a story.
+    Anyway, in the actual code, the droids just return a boolean in
+    their response.
+  - If the droid is clean, it moves on to the next one.  Otherwise...
+  - The SecurityRobot, having confirmed that this robot is a threat,
+    begins firing shots.  Messages are exchanged confirming how much
+    damage is taken and whether or not the droid is still alive.  The
+    SecurityRobot fires at the droid until it's confirmed to be dead.
+- Once that's all done, the SecurityRobot declares "mission accomplished"
+  and shuts down the hive.  Simulation over!
+
+So!  Lots of code, but most of it familiar.  There are two new things though!
+
+Previously when we wrote code, we might have yielded on reply just
+to confirm that the message we sent was handled before we continued.
+In this case, we actually need some data.  You may notice that
+there's a new format here:
+
+.. code-block:: python
+
+    response = yield self.wait_on_message(
+        to=recipient
+        directive="some_directive")
+
+Any time that a coroutine is resumed after being suspended with a
+yield, that's because the actor received a message "in_reply_to" the
+original outgoing message's message id.  Since we're getting a message
+back, we can of course look at that message... hence the `response`
+being assigned to the left of the yield.  This is another Message
+object, just like the message argument passed in at the start of the
+message handler.
+
+This means that if you need to write complex asynchronous logic that
+needs message passed around back and forth, writing such code looks
+nearly as simple as normal method calling.  It's just that this time,
+it's encapsulated in message passing!  But imagine trying to
+accomplish this method above with callbacks... it would require
+splitting between a lot of callbacks.  Nested inline or not, that can
+get pretty confusing.  With XUDD, it's easy!
+
+The last thing that's new is the `self.hive.send_shutdown()` call.
+Yes, this does exactly what it sounds like... it shuts down the Hive.
+Simulation over!
+
+
+Okay!  Let's run this thing!
+============================
+
+Okay, whew!  That was a lot of code, and a lot of explaining!  What
+does it actually look like when we run it?  It's mostly what you'd
+expect::
+
+    $ python xudd/demos/simple_robotscanner.py 
+    Entering room 6pjMdqWIQKGrELiAAcmwwQ...
+    iHrqJnTmT_yEmzQxQuA2uA is clean... moving on.
+    QTqPLAsnSq2VFIbF0EGPrw found to be infected... taking out
+    Droid QTqPLAsnSq2VFIbF0EGPrw shot; taken 42 damage. Still alive... 8 hp left.
+    Droid QTqPLAsnSq2VFIbF0EGPrw shot; taken 33 damage. Terminated.
+    ATaO3FQzTZmAv6zOvlB3LQ is clean... moving on.
+    Ays2zH70TXCwA7FTkZKGug found to be infected... taking out
+    Droid Ays2zH70TXCwA7FTkZKGug shot; taken 31 damage. Still alive... 19 hp left.
+    Droid Ays2zH70TXCwA7FTkZKGug shot; taken 11 damage. Still alive... 8 hp left.
+    Droid Ays2zH70TXCwA7FTkZKGug shot; taken 34 damage. Terminated.
+    qrKnae_7QF237HVZiO-gKw found to be infected... taking out
+    Droid qrKnae_7QF237HVZiO-gKw shot; taken 14 damage. Still alive... 36 hp left.
+    Droid qrKnae_7QF237HVZiO-gKw shot; taken 54 damage. Terminated.
+    cMrc96qGRzWP9CtY4wh70A found to be infected... taking out
+    Droid cMrc96qGRzWP9CtY4wh70A shot; taken 48 damage. Still alive... 2 hp left.
+    Droid cMrc96qGRzWP9CtY4wh70A shot; taken 15 damage. Terminated.
+    gB4LFt3IRk-rfL8U2TUPnQ is clean... moving on.
+    SIvh6l24TIKSH7y3M1MXDQ found to be infected... taking out
+    Droid SIvh6l24TIKSH7y3M1MXDQ shot; taken 38 damage. Still alive... 12 hp left.
+    Droid SIvh6l24TIKSH7y3M1MXDQ shot; taken 40 damage. Terminated.
+    nunaOJWNQVK2Ya9oB3UI8Q found to be infected... taking out
+    Droid nunaOJWNQVK2Ya9oB3UI8Q shot; taken 40 damage. Still alive... 10 hp left.
+    Droid nunaOJWNQVK2Ya9oB3UI8Q shot; taken 12 damage. Terminated.
+    2JPFYDhpQ-ijOehrwfgIEA found to be infected... taking out
+    Droid 2JPFYDhpQ-ijOehrwfgIEA shot; taken 33 damage. Still alive... 17 hp left.
+    Droid 2JPFYDhpQ-ijOehrwfgIEA shot; taken 35 damage. Terminated.
+    JwIDRV2eS5mAdIX_s9zbdA is clean... moving on.
+    Kg07A6hCRMC3eFHE4eDcvA found to be infected... taking out
+    Droid Kg07A6hCRMC3eFHE4eDcvA shot; taken 36 damage. Still alive... 14 hp left.
+    Droid Kg07A6hCRMC3eFHE4eDcvA shot; taken 21 damage. Terminated.
+    TxMl7_-9S5OGsNDcJ0reYw is clean... moving on.
+    Mission accomplished.
+
+Pretty cool eh?  If you made it this far, nice work!  That was a lot
+of explaining above, but you now the basics to get up and running
+coding in XUDD.
 
 Where to go from here
 =====================
 
+If you want to see the completed demo, this demo is included with XUDD.
+Check out `xudd/demos/simple_robotscanner.py`.
 
+If you want to look at a slightly more complex version, there's also
+`xudd/demos/robotscanner.py` which has several extra layers: multiple
+rooms, sending feedback back to the Overseer, etc.  `robotscanner.py`
+is the first program ever written in XUDD, and was written before the
+actual system was completed with very few modifications.  We're happy
+to say that the initial demo worked with very few tweaks after the
+initial pieces of the engine fell into place... this is partly because
+XUDD's design is so simple!  The above may seem like a lot of code,
+but we hope you'll find that XUDD's implementation of the actor model
+is straightforward, easy to understand, and comfortable to code in.
 
+If you're looking for more code examples, there's some more in
+`xudd/demos/` as well.
+
+And of course, if you're ready to start learning more and doing more
+coding, you should move on with reading this manual.
+
+Good luck, and have fun!

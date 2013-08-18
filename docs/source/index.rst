@@ -58,6 +58,7 @@ You can find our code at: https://github.com/cwebber/xudd/
    :maxdepth: 2
 
    intro
+   tutorial
    core
    cloud
 
