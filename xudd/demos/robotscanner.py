@@ -290,7 +290,7 @@ class SecurityRobot(Actor):
                 break
 
         # Good job everyone! Shut down the operation.
-        self.hive.send_message(
+        yield self.wait_on_message(
             to="overseer",
             directive="transmission",
             body={
