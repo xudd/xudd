@@ -72,12 +72,12 @@ class WarehouseRoom(Actor):
             {"register_droid": self.register_droid,
              "list_droids": self.list_droids})
 
+    def register_droid(self, message):
+        self.droids.append(message.body['droid_id'])
+
     def list_droids(self, message):
         message.reply(
             {"droid_ids": self.droids})
-
-    def register_droid(self, message):
-        self.droids.append(message.body['droid_id'])
 
 
 class Droid(Actor):
