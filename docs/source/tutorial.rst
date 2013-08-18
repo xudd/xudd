@@ -2,7 +2,11 @@
 XUDD Tutorial
 =============
 
-Let's go over the core concepts and do a quick demo.
+This tutorial should walk you through most of the main features of
+XUDD.  The actual code that's written is pretty short (only about 200
+lines) but the explaination is a bit lengthy... that's because by the
+time you're done reading this tutorial, you should have a pretty good
+sense of all the basics!
 
 The premise
 ===========
