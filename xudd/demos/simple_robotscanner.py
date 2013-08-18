@@ -192,7 +192,7 @@ class SecurityRobot(Actor):
 
 
 def main():
-    # Invoke the destruction deity
+    # Create the hive
     hive = Hive()
 
     # Add overseer, who populates the world and runs the simulation
