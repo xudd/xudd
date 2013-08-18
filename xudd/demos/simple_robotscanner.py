@@ -66,7 +66,7 @@ class WarehouseRoom(Actor):
     """
     def __init__(self, hive, id):
         super(WarehouseRoom, self).__init__(hive, id)
-        self.droids = set()
+        self.droids = []
 
         self.message_routing.update(
             {"register_droid": self.register_droid,
@@ -77,7 +77,7 @@ class WarehouseRoom(Actor):
             {"droid_ids": self.droids})
 
     def register_droid(self, message):
-        self.droids.add(message.body['droid_id'])
+        self.droids.append(message.body['droid_id'])
 
 
 class Droid(Actor):
