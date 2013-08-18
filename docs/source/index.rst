@@ -57,7 +57,7 @@ You can find our code at: https://github.com/cwebber/xudd/
 .. toctree::
    :maxdepth: 2
 
-   intro
+   about
    tutorial
    core
    cloud
