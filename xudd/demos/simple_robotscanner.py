@@ -12,12 +12,9 @@ with one room. ;)
 
 from __future__ import print_function
 import random
-import logging
 
 from xudd.hive import Hive
 from xudd.actor import Actor
-
-_log = logging.getLogger(__name__)
 
 
 def droid_list(num_clean, num_infected):
@@ -44,7 +41,6 @@ class Overseer(Actor):
         Initialize the world we're operating in for this demo.
         """
         # DEBUG
-        _log.debug('Creating puny world')
 
         # Create room and droids
         room = self.hive.create_actor(WarehouseRoom)
@@ -52,7 +48,6 @@ class Overseer(Actor):
         for is_droid_clean in droid_list(5, 8):
             droid = self.hive.create_actor(
                 Droid, infected=is_droid_clean, room=room)
-            _log.debug('New droid created')
             yield self.wait_on_message(
                 to=droid,
                 directive="register_with_room")
@@ -105,13 +100,10 @@ class Droid(Actor):
              "register_with_room": self.register_with_room})
 
     def register_with_room(self, message):
-        _log.debug('Droid {0} registering'.format(self.id))
         yield self.wait_on_message(
             to=self.room,
             directive="register_droid",
             body={"droid_id": self.id})
-
-        _log.debug('Registered droid {0}!'.format(self.id))
 
     def infection_expose(self, message):
         message.reply(
@@ -202,10 +194,6 @@ class SecurityRobot(Actor):
 
 
 def main():
-    # Set up logging
-    logging.basicConfig()
-    logging.getLogger().setLevel(logging.WARNING)
-
     # Invoke the destruction deity
     hive = Hive()
 
