@@ -278,14 +278,103 @@ message sending:
   later) before we can continue.  XUDD's coroutine nature makes this
   fairly easy.
 
+This was a lot of explaination for a small amount of code!  But don't
+worry, we covered a lot of ground here.
+
+
 Building a simple room
 ======================
 
+Now let's build the room for our droids to go in:
 
+.. code-block:: python
 
+    class WarehouseRoom(Actor):
+        """
+        A room full of robots.
+        """
+        def __init__(self, hive, id):
+            super(WarehouseRoom, self).__init__(hive, id)
+            self.droids = []
+    
+            self.message_routing.update(
+                {"register_droid": self.register_droid,
+                 "list_droids": self.list_droids})
+    
+        def register_droid(self, message):
+            self.droids.append(message.body['droid_id'])
+
+        def list_droids(self, message):
+            message.reply(
+                {"droid_ids": self.droids})
+    
+
+A lot of this should look familiar.  We added an attribute to keep
+track of droids and a couple of methods for registering and listing
+droids, but that's about it.
+
+The `register_droid` method expects a parameter in its body of
+`droid_id` which tells it which droid is being hooked up here, and it
+adds it to its own list.
+
+The `list_droids` method does something interesting: it uses
+`message.reply()`.  This is a lazy tool to make replying to messages
+easy.  XUDD comes with a number of tools related to replying and
+auto-replying... see :ref:`replying_to_messages` for details.  As you
+might have guessed, the first parameter to `message.reply` is the body
+of the response (we already know who the recipient is, and XUDD simply
+marks the directive of a reply as "reply"... usually it doesn't matter
+because it's passed to a coroutine-in-waiting anyway).  We'll come
+back to `list_droids` later when we build our SecurityRobot.
 
 Building the worker droids
 ==========================
+
+.. code-block:: python
+
+    class Droid(Actor):
+        """
+        A droid that may or may not be infected!
+    
+        What will happen?  Stay tuned!
+        """
+        def __init__(self, hive, id, room, infected=False):
+            super(Droid, self).__init__(hive, id)
+            self.infected = infected
+            self.hp = 50
+            self.room = room
+    
+            self.message_routing.update(
+                {"infection_expose": self.infection_expose,
+                 "get_shot": self.get_shot,
+                 "register_with_room": self.register_with_room})
+    
+        def register_with_room(self, message):
+            yield self.wait_on_message(
+                to=self.room,
+                directive="register_droid",
+                body={"droid_id": self.id})
+    
+        def infection_expose(self, message):
+            message.reply(
+                {"is_infected": self.infected})
+    
+        def get_shot(self, message):
+            damage = random.randrange(0, 60)
+            self.hp -= damage
+            alive = self.hp > 0
+    
+            message.reply(
+                body={
+                    "hp_left": self.hp,
+                    "damage_taken": damage,
+                    "alive": alive})
+    
+            if not alive:
+                self.hive.remove_actor(self.id)
+
+
+
 
 Building the security robot
 ===========================
