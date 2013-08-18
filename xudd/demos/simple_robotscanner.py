@@ -21,7 +21,7 @@ def droid_list(num_clean, num_infected):
     """
     Create a list of (shuffled) clean droids and infected droids
     """
-    droids = [True] * num_clean + [False] * num_infected
+    droids = [False] * num_clean + [True] * num_infected
     random.shuffle(droids)
     return droids
     
