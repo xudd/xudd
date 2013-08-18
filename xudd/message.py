@@ -3,10 +3,11 @@ import json
 class Message(object):
     """Encapsulation of message data.
 
-    This is what's actually put in an actor's message queue.  While
-    messages can actually be serialized into json or msgpack data,
-    (and methods for that are provided,) this is the standard
-    representation for passing around messages in XUDD itself.
+    This is what's actually passed to an actor's `handle_message`
+    method.  While messages can actually be serialized into json or
+    msgpack data, (and methods for that are provided,) this is the
+    standard representation for passing around messages in XUDD
+    itself.
 
     Usually, however, actors themselves do not construct Message
     objects: these are instead constructed by the Hive itself.  Actors
