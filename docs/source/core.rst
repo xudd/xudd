@@ -114,9 +114,6 @@ You can see how this works in code:
 Actors
 ======
 
-What is an actor, anyway?
--------------------------
-
 Instantiating actors
 --------------------
 
@@ -174,7 +171,7 @@ Technically, an actor is only *required* to have the following properties:
    that handles passing messages off to various
    :ref:`message handlers <handling_messages>`, permitting message handlers
    to "suspend" themselves via coroutines while they
-   :ref:`yield in wait for replies <hielding_for_replies>`, as well as
+   :ref:`yield in wait for replies <yielding_for_replies>`, as well as
    features such as automatically
    :ref:`replying to mesages <replying_to_messages>`.
    Your actor does not have to use this logic, though it's recommended
@@ -184,17 +181,32 @@ Technically, an actor is only *required* to have the following properties:
    coroutines in waiting forever in case your actor doesn't make an
    explicit reply!
 
-
-On actor communication
-----------------------
-
-
 .. _handling_messages:
 
 Handling messages
 -----------------
 
+The default behavior for actors is to pass off messages to a message
+handler method like so:
 
+.. code-block:: python
+
+    class RascallyRabbit(Actor):
+        def __init__(self, hive, id):
+            super(Overseer, self).__init__(hive, id)
+    
+            self.message_routing.update(
+                {"do_tricks": self.do_tricks})
+    
+        def do_tricks(self, message):
+            trick_hunter(message.from_id)
+
+In the above example, if our "RascallyRabbit" gets a message with the
+directive "do_tricks", that message will be executed by the
+`do_tricks` method.
+
+But messages and handling messages is a whole big topic, so let's
+examine that below.
 
 
 Messages
