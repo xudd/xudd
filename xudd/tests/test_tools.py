@@ -30,3 +30,5 @@ def test_split_id():
 def test_possibly_qualify_id():
     assert tools.possibly_qualify_id("actor", "hive") == "actor@hive"
     assert tools.possibly_qualify_id("actor@hive", "hive") == "actor@hive"
+    # Don't assign a different hive than the one it already has
+    assert tools.possibly_qualify_id("actor@hive", "other-hive") == "actor@hive"
