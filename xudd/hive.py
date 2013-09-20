@@ -52,8 +52,17 @@ class Hive(Actor):
         self.message_uuid = base64_uuid4()
         self.message_counter = count()
 
+        # Ambassador registry (for inter-hive-communication)
+        self._ambassadors = {}
+
+        # Extend message routing
+        self.message_routing.update(
+            {"register_ambassador": self.register_ambassador,
+             "unregister_ambassador": self.unregister_ambassador})
+
         # Register ourselves on... ourselves ;)
         self.register_actor(self)
+
 
     def register_actor(self, actor):
         """
@@ -193,6 +202,26 @@ class Hive(Actor):
         # We should have a more graceful shutdown feature that gives
         # the actors a chance to wrap up business ;)
         self.should_stop = True
+
+    #############################
+    # Common hive message routing
+    #############################
+    def register_ambassador(self, message):
+        """
+        Register this actor as being the ambassador for some specific hive id
+        """
+        from_actor_id, from_hive_id = split_id(message.to)
+        assert from_hive_id == self.hive_id or from_hive_id is None
+        self.ambassadors[message.body["hive_id"]] = from_actor_id
+
+    def unregister_ambassador(self, message):
+        """
+        Unregister this actor as being the ambassador for some specific hive id
+        """
+        from_actor_id, from_hive_id = split_id(message.to)
+        assert from_hive_id == self.hive_id or from_hive_id is None
+        old_ambassador_id = self.ambassadors.pop(message.body["hive_id"])
+        assert old_ambassador_id == from_actor_id
 
 
 class HiveProxy(object):
