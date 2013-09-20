@@ -194,45 +194,6 @@ class Hive(Actor):
         # the actors a chance to wrap up business ;)
         self.should_stop = True
 
-### TODO: We may or may not return to this, for now we have nothing
-###   that fits upon here.
-###   ... note that I HATE commented out blocks of code like this.
-###   However, we may be adding it back when dedicated actors reappear,
-###   hence it sitting here for the next week or so.
-###   THIS WILL NOT STAY COMMENTED OUT LIKE THIS
-#
-#      def _process_hive_actions(self):
-#          for i in range(len(self.hive_action_queue)):
-#              try:
-#                  action = self.hive_action_queue.popleft()
-#              except IndexError:
-#                  # no more hive actions to process
-#                  # ... this shouldn't happen though?
-#                  break
-#
-#              action_type = action[0]
-#
-#              # The actor just had their stuff processed... see if they
-#              # should be put back on the actor queue
-#              if action_type == "check_queue_actor":
-#                  actor = action[1]
-#                  # Should we requeue?
-#                  if not len(actor.message_queue) == 0 and \
-#                     not actor in self._actors_in_queue:
-#                      # Looks like so!
-#                      self._actor_queue.append(actor)
-#                      self._actors_in_queue.add(actor)
-#
-#              elif action_type == "queue_message":
-#                  message = action[1]
-#                  self.queue_message(message)
-#
-#              else:
-#                  raise UnknownHiveAction(
-#                      "Unknown action: %s" % action_type)
-#
-# class UnknownHiveAction(Exception): pass
-
 
 class HiveProxy(object):
     """
