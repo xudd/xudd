@@ -25,3 +25,8 @@ def test_split_id():
     # We really shouldn't have any formatted like this, but just
     # in case...
     assert tools.split_id("actor@hive@garbage") == ["actor", "hive@garbage"]
+
+
+def test_possibly_qualify_id():
+    assert tools.possibly_qualify_id("actor", "hive") == "actor@hive"
+    assert tools.possibly_qualify_id("actor@hive", "hive") == "actor@hive"

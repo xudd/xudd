@@ -34,3 +34,14 @@ def split_id(actor_id):
         components.append(None)
 
     return components
+
+
+def possibly_qualify_id(actor_id, hive_id):
+    """
+    If this actor doesn't already have a hive id assigned to it, assign it
+    """
+    # it's already qualified, just return it
+    if is_qualified_id(actor_id):
+        return actor_id
+
+    return u"%s@%s" % (actor_id, hive_id)
