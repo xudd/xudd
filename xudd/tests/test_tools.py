@@ -17,3 +17,11 @@ def test_is_qualified_id():
     assert tools.is_qualified_id("foo@bar") is True
     assert tools.is_qualified_id("foo") is False
 
+
+def test_split_id():
+    assert tools.split_id("actor@hive") == ["actor", "hive"]
+    assert tools.split_id("actor") == ["actor", None]
+
+    # We really shouldn't have any formatted like this, but just
+    # in case...
+    assert tools.split_id("actor@hive@garbage") == ["actor", "hive@garbage"]

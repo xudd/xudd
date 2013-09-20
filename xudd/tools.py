@@ -21,3 +21,15 @@ def is_qualified_id(actor_id):
     @hive-id attached) or not.
     """
     return u"@" in actor_id
+
+def split_id(actor_id):
+    """
+    Split an actor id into ("actor-id", "hive-id")
+
+    If no hive-id, it will be None.
+    """
+    components = actor_id.split(u"@", 1)
+    if len(components) == 1:
+        components.append(None)
+
+    return components
