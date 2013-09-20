@@ -13,3 +13,11 @@ def base64_uuid4():
         base64_encoded = base64_encoded.decode("utf-8")
 
     return base64_encoded.rstrip("=")
+
+
+def is_qualified_id(actor_id):
+    """
+    See whether or not this actor id is fully qualified (has the
+    @hive-id attached) or not.
+    """
+    return u"@" in actor_id

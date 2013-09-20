@@ -11,3 +11,9 @@ UUID_MOCK = mock.Mock(return_value=FakeUUID())
 @mock.patch('uuid.uuid4', UUID_MOCK)
 def test_base64_unicode():
     assert tools.base64_uuid4() == u"BY84g5NtSWCroZZOux9FhA"
+
+
+def test_is_qualified_id():
+    assert tools.is_qualified_id("foo@bar") is True
+    assert tools.is_qualified_id("foo") is False
+
