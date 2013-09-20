@@ -37,8 +37,12 @@ def split_id(actor_id):
 
 
 def possibly_qualify_id(actor_id, hive_id):
-    """
-    If this actor doesn't already have a hive id assigned to it, assign it
+    """If this actor doesn't already have a hive id assigned to it, assign it
+
+    Note that you can specify a hive_id here, and if there is already
+    a hive_id on the actor_id, it simply won't assign something.  This
+    is useful if you want to declare an actor as local if it's not
+    assigned, but let it stay remote if it is.
     """
     # it's already qualified, just return it
     if is_qualified_id(actor_id):
