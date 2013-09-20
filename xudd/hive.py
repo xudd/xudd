@@ -7,7 +7,7 @@ from itertools import count
 from xudd import PY2
 
 from xudd.message import Message
-from xudd.tools import base64_uuid4
+from xudd.tools import base64_uuid4, possibly_qualify_id, split_id
 from xudd.actor import Actor
 
 _log = logging.getLogger(__name__)
@@ -85,7 +85,9 @@ class Hive(Actor):
         """
         message_id = id or self.gen_message_id()
         message = Message(
-            to=to, directive=directive, from_id=from_id, body=body,
+            to=possibly_qualify_id(to, self.hive_id),
+            from_id=possibly_qualify_id(from_id, self.hive_id),
+            directive=directive, body=body,
             in_reply_to=in_reply_to, id=message_id, wants_reply=wants_reply)
 
         self._message_queue.append(message)
@@ -108,21 +110,34 @@ class Hive(Actor):
         #   actions after we finish going through these present messages
         for i in range(len(self._message_queue)):
             message = self._message_queue.popleft()
-            try:
-                actor = self._actor_registry[message.to]
-            except IndexError:
-                # For some reason this actor wasn't found, so we may need to
-                # inform the original sender
-                _log.warning('recipient not found for message: {0}'.format(
-                    message))
 
-                self.return_to_sender(message)
+            # Route appropriately here
 
-            # Maybe not the most opportune place to attach this
-            message.hive_proxy = actor.hive
+            actor_id, hive_id = split_id(message.to)
 
-            # TODO: More error handling here! ;)
-            actor.handle_message(message)
+            ## Is the actor local?  Send it!
+            if hive_id == self.hive_id:
+                try:
+                    actor = self._actor_registry[actor_id]
+                except IndexError:
+                    # For some reason this actor wasn't found, so we may need to
+                    # inform the original sender
+                    _log.warning('recipient not found for message: {0}'.format(
+                        message))
+
+                    self.return_to_sender(message)
+
+                # Maybe not the most opportune place to attach this
+                message.hive_proxy = actor.hive
+
+                # TODO: More error handling here! ;)
+                actor.handle_message(message)
+
+            ## Looks like the actor must be remote, forward it!
+            else:
+                raise NotImplementedError(
+                    "Heh, don't have remote actors yet ;)")
+
 
     def return_to_sender(self, message, directive="error.no_such_actor"):
         """
@@ -172,7 +187,7 @@ class Hive(Actor):
         hive_proxy.associate_with_actor(actor)
         self.register_actor(actor)
 
-        return actor_id
+        return possibly_qualify_id(actor_id, self.hive_id)
 
     def send_shutdown(self):
         # We should have a more graceful shutdown feature that gives
