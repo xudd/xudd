@@ -22,6 +22,7 @@ def is_qualified_id(actor_id):
     """
     return u"@" in actor_id
 
+
 def split_id(actor_id):
     """
     Split an actor id into ("actor-id", "hive-id")
