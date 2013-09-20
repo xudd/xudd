@@ -43,7 +43,14 @@ def possibly_qualify_id(actor_id, hive_id):
     a hive_id on the actor_id, it simply won't assign something.  This
     is useful if you want to declare an actor as local if it's not
     assigned, but let it stay remote if it is.
+
+    Also, if the actor_id is None, then return None. :)
+    This is useful as a shortcut: we might try to qualify a to/from
+    field that's actually None.
     """
+    if actor_id is None:
+        return None
+
     # it's already qualified, just return it
     if is_qualified_id(actor_id):
         return actor_id
