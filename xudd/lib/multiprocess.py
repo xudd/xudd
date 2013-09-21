@@ -40,3 +40,15 @@ class MultiProcessHive(Hive):
             hive_id=hive_id)
         self.receive_queue = receive_queue
         self.send_queue = send_queue
+
+    def _flush_receive_queue(self):
+        queue_len = self.receive_queue.qsize()
+        for i in range(queue_len):
+            # do we need exception handling here?
+            item = self.receive_queue.get()
+            pass
+
+    def run(self):
+        while not self.should_stop:
+            self._flush_receive_queue()
+            self._process_messages()
