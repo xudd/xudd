@@ -25,17 +25,10 @@ class IRCBot(Actor):
 
         self.message_routing.update({
             'handle_login': self.handle_login,
-            'handle_message': self.handle_message,
+            'handle_line': self.handle_line,
         })
 
-    def handle_message(self, message):
-        if not 'message' in message.body:
-            _log.error('No message in body of {!r}'.format(message))
-            # XXX: FOR SOME REASON MESSAGES FROM lib.irc.IRC with
-            # directive=handle_login ENDS UP HERE, THIS IS A REALLY UGLY
-            # WORKAROUND THAT JUST WORKS
-            return self.handle_login(message)
-
+    def handle_line(self, message):
         msg = message.body['message']
         command = message.body['command']
         params = message.body['params']
@@ -52,15 +45,14 @@ class IRCBot(Actor):
 
             _log.info('Message from ')
 
-            code = params.trailing[1:]
+            text = params.trailing
 
             if params.middle == self.nick:
-                message.reply(body={
+                return message.reply(
+                    body={
                     'line': u'PRIVMSG {0} :{1}'.format(
-                        via, msg)
+                        via, text)
                 })
-
-        return message.reply()
 
     def handle_login(self, message):
         _log.info('Logging in')
@@ -82,9 +74,6 @@ class IRCBot(Actor):
 
 def connect():
     logging.basicConfig(level=logging.DEBUG)
-
-    logging.getLogger('xudd.hive').setLevel(logging.INFO)
-    logging.getLogger('xudd.actor').setLevel(logging.INFO)
 
     hive = Hive()
 

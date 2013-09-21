@@ -17,12 +17,12 @@ else:
 class IRCClient(Actor):
     def __init__(self, hive, id, message_handler=None,
                  encoding='utf8'):
-        super(IRC, self).__init__(hive, id)
+        super(IRCClient, self).__init__(hive, id)
 
         self.message_routing.update({
             'handle_chunk': self.handle_chunk,
-            'respond': self.respond,
         })
+
         self.message_handler = message_handler
 
         self.authenticated = False
@@ -34,31 +34,42 @@ class IRCClient(Actor):
         else:
             self.incoming = b''
 
+    def send_if_line(self, original_message, response_from_handler):
+        if 'line' in response_from_handler.body:
+            msg = self.encode(response_from_handler.body['line']) + IRC_EOL
+
+            original_message.reply(
+                directive=u'send',
+                body={
+                    'message': msg
+                })
+
+            _log.debug(' >>> {!r}'.format(msg))
+
     def handle_chunk(self, message):
         self.incoming += message.body['chunk']
 
+        ## Call the message handler and ask for password &c.
         if not self.authenticated:
             _log.error('NOT AUTHENTICATED')
             response = yield self.wait_on_message(
                 to=self.message_handler,
-                directive='handle_login',
-                body={'action': 'login'})
+                directive='handle_login')
 
             _log.debug('RESPONSE: {0.body!r}'.format(response))
 
-            if 'line' in response.body:
-                raw_message = self.encode(response.body['line'])
-                raw_message += IRC_EOL
+            self.send_if_line(message, response)
 
-                _log.debug(' >>> {!r}'.format(raw_message))
+            self.authenticated = True  # XXX: We only assume so
 
-                message.reply(
-                    directive='send',
-                    body={
-                        'message': raw_message
-                    })
+            response = yield self.wait_on_message(
+                to=self.message_handler,
+                directive='on_authenticated'
+            )
+            self.send_if_line(message, response)
 
-                self.authenticated = True
+        ## Parse the ``incoming`` buffer and pass the parsed message to the
+        ## message handler
         else:
             while IRC_EOL in self.incoming:
                 line, self.incoming = self.incoming.split(IRC_EOL, 1)
@@ -81,24 +92,10 @@ class IRCClient(Actor):
 
                 response = yield self.wait_on_message(
                     to=self.message_handler,
-                    directive='handle_message',
+                    directive='handle_line',
                     body=body)
 
-                if 'line' in response.body:
-                    raw_message = self.encode(response.body['line'])
-                    raw_message += IRC_EOL
-
-                    _log.debug(' >>> {!r}'.format(raw_message))
-
-                    message.reply(
-                        directive='send',
-                        body={
-                            'message': raw_message
-                        })
-
-    def respond(self, message):
-        if not 'line' in message.body:
-            return
+                self.send_if_line(message, response)
 
     def decode(self, str_or_bytes):
         if PY2:
