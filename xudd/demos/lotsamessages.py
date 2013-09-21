@@ -84,24 +84,11 @@ class Assistant(Actor):
             {"did_your_grunt_work": True})
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description="Lots of Messages experiment")
-    parser.add_argument(
-        "-e", "--experiments",
-        help="Number of experiments to run",
-        default=20, type=int)
-    parser.add_argument(
-        "-s", "--steps",
-        help="Number of steps each experiment should require",
-        default=5000, type=int)
-    parser.add_argument(
-        "-w", "--workers",
-        help="How many worker threads running in the hive",
-        default=5, type=int)
+DEFAULT_NUM_EXPERIMENTS = 20
+DEFAULT_NUM_STEPS = 5000
 
-    args = parser.parse_args()
 
+def main(num_experiments=DEFAULT_NUM_STEPS, num_steps=DEFAULT_NUM_STEPS):
     hive = Hive()
 
     department_chair = hive.create_actor(
@@ -111,11 +98,27 @@ def main():
         to=department_chair,
         directive="oversee_experiments",
         body={
-            "num_experiments": args.experiments,
-            "num_steps": args.steps})
+            "num_experiments": num_experiments,
+            "num_steps": num_steps})
 
     hive.run()
 
 
+def cli():
+    parser = argparse.ArgumentParser(
+        description="Lots of Messages experiment")
+    parser.add_argument(
+        "-e", "--experiments",
+        help="Number of experiments to run",
+        default=DEFAULT_NUM_EXPERIMENTS, type=int)
+    parser.add_argument(
+        "-s", "--steps",
+        help="Number of steps each experiment should require",
+        default=DEFAULT_NUM_STEPS, type=int)
+
+    args = parser.parse_args()
+    main(args.experiments, args.steps)
+
+
 if __name__ == "__main__":
-    main()
+    cli()
