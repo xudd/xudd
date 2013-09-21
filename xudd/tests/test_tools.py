@@ -35,5 +35,5 @@ def test_possibly_qualify_id():
     assert tools.possibly_qualify_id("actor@hive", "other-hive") == "actor@hive"
 
     # If the actor_id is None, return None.
-    assert tools.possibly_qualify_id(None, "other-hive") == "actor@hive"
+    assert tools.possibly_qualify_id(None, "hive") == None
     
