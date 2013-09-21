@@ -13,8 +13,8 @@ class HTTP(Actor):
     '''
     Parses HTTP from socket data
     '''
-    @super_init
     def __init__(self, hive, id, request_handler):
+        super(HTTP, self).__init__(hive, id)
         self.message_routing.update({
             'handle_request': self.handle_request,
             'handle_request_body': self.handle_request_body

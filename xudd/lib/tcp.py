@@ -2,13 +2,13 @@ import socket
 import select
 import logging
 
-from xudd.actor import Actor, super_init
+from xudd.actor import Actor
 
 _log = logging.getLogger(__name__)
 
 class Server(Actor):
-    @super_init
     def __init__(self, hive, id=None, request_handler=None):
+        super(Server, self).__init__(hive, id)
         self.message_routing.update({
             'respond': self.respond,
             'listen': self.listen
@@ -76,14 +76,14 @@ class Server(Actor):
 
 
 class Client(Actor):
-    @super_init
-    def __init__(self, hive, id, message_handler=None):
+    def __init__(self, hive, id, chunk_handler=None):
+        super(Client, self).__init__(hive, id)
         self.message_routing.update({
             'connect': self.connect,
             'send': self.send,
         })
 
-        self.message_handler = message_handler
+        self.chunk_handler = chunk_handler
 
     def connect(self, message):
         try:
@@ -113,14 +113,12 @@ class Client(Actor):
             if readable:
                 chunk = self.socket.recv(chunk_size)
 
-                if chunk is '':
+                if chunk in ['', b'']:
                     raise RuntimeError('socket connection broken')
 
-                _log.debug('chunk: {!r}'.format(chunk))
-
                 self.send_message(
-                    to=self.message_handler,
-                    directive='handle_message',
+                    to=self.chunk_handler,
+                    directive='handle_chunk',
                     body={'chunk': chunk})
 
             yield self.wait_on_self()
