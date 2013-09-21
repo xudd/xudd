@@ -1,6 +1,5 @@
 import logging
-import sys
-import traceback
+import random
 
 from xudd.lib.tcp import Client
 from xudd.lib.irc import IRCClient
@@ -43,12 +42,24 @@ class IRCBot(Actor):
             else:
                 via = prefix.nick
 
-            _log.info('Message from ')
-
             text = params.trailing
 
-            if params.middle == self.nick:
-                return message.reply(
+            if text[0:5] == '!fate':
+                DICE_REPR = {-1: '[-]', 0: '[_]', 1: '[+]'}
+                result = []
+                for i in range(4):
+                    result.append(random.randrange(-1, 2))
+
+                reply = ' '.join([DICE_REPR.get(i, 'ERR') for i in result])
+                reply += ' => {0}'.format(sum(result))
+                message.reply(
+                    body={
+                    'line': u'PRIVMSG {0} :{1}'.format(
+                        via, reply)
+                })
+
+            elif params.middle == self.nick:
+                message.reply(
                     body={
                     'line': u'PRIVMSG {0} :{1}'.format(
                         via, text)
