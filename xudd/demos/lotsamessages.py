@@ -10,7 +10,7 @@ from xudd.actor import Actor
 
 class SuccessTracker(object):
     def __init__(self):
-        success = False
+        self.success = False
 
 
 class DepartmentChair(Actor):
