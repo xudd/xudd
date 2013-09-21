@@ -12,6 +12,6 @@ def test_lotsamessages():
     """
     Test the lotsamessages demo (but not with too many messages ;))
     """
-    lotsamessages.main(num_experiments=20, num_steps=20)
+    assert lotsamessages.main(num_experiments=20, num_steps=20) is True
 
 ### def test_ihc_lotsamessages():

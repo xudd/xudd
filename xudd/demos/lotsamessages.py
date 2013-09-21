@@ -8,6 +8,11 @@ from xudd.hive import Hive
 from xudd.actor import Actor
 
 
+class SuccessTracker(object):
+    def __init__(self):
+        success = False
+
+
 class DepartmentChair(Actor):
     """
     Actor that initializes the world of this demo, starts the mission,
@@ -20,10 +25,14 @@ class DepartmentChair(Actor):
             {"oversee_experiments": self.oversee_experiments,
              "experiment_is_done": self.experiment_is_done})
         self.experiments_in_progress = set()
+        self.success_tracker = None
 
     def oversee_experiments(self, message):
         num_experiments = message.body['num_experiments']
         num_steps = message.body['num_steps']
+
+        if message.body.get('success_tracker'):
+            self.success_tracker = message.body['success_tracker']
 
         print("Starting %s experiments with %s steps each" % (
             num_experiments, num_steps))
@@ -46,6 +55,10 @@ class DepartmentChair(Actor):
             print(
                 "Last experiment message (%s) received from (%s), shutting down" % (
                     message.id, message.from_id))
+
+            if self.success_tracker is not None:
+                self.success_tracker.success = True
+
             self.hive.send_shutdown()
 
 
@@ -89,6 +102,11 @@ DEFAULT_NUM_STEPS = 5000
 
 
 def main(num_experiments=DEFAULT_NUM_STEPS, num_steps=DEFAULT_NUM_STEPS):
+    """
+    Returns True if the experiment was a success.
+    """
+    success_tracker = SuccessTracker()
+
     hive = Hive()
 
     department_chair = hive.create_actor(
@@ -99,9 +117,12 @@ def main(num_experiments=DEFAULT_NUM_STEPS, num_steps=DEFAULT_NUM_STEPS):
         directive="oversee_experiments",
         body={
             "num_experiments": num_experiments,
-            "num_steps": num_steps})
+            "num_steps": num_steps,
+            "success_tracker": success_tracker})
 
     hive.run()
+
+    return success_tracker.success
 
 
 def cli():
