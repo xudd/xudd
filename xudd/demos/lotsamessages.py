@@ -12,7 +12,7 @@ from xudd.lib.multiprocess import MultiProcessAmbassador
 
 class SuccessTracker(object):
     def __init__(self):
-        success = False
+        self.success = False
 
 
 def worker_allocation(jobs, workers):
