@@ -43,7 +43,7 @@ class DepartmentChair(Actor):
         # we set this up in setup()
         self.worker_hives = []
 
-    def setup_worker_hives(self, message):
+    def setup_worker_processes(self, message):
         """
         Set up all our worker hives, if they aren't already.
 
