@@ -16,13 +16,22 @@ class SuccessTracker(object):
 
 
 def worker_allocation(jobs, workers):
-    """
-    Return jobs allocated to workers, hackily :)
+    """Return jobs allocated to workers, hackily :)
 
     Given an iterable of jobs to be processed, and an iterable of
     available workers, it lines 'em up!
+
+    workers iterable must be "multiplyable", like a list, for this to
+    work (ie,
+      >>> ['a', 'b'] * 2
+      ['a', 'b', 'a', 'b']
     """
-    return zip(jobs, workers * int(ceil(len(jobs) / float(len(workers)))))
+    # This method is evil, and the comment only barely helps
+    return zip(
+        jobs,
+        # repeated loop of workers for as many times as it takes
+        # to have enough to fulfill all these jobs
+        workers * int(ceil(len(jobs) / float(len(workers)))))
 
 
 class DepartmentChair(Actor):
