@@ -81,9 +81,22 @@ class DepartmentChair(Actor):
         print("Starting %s experiments with %s steps each" % (
             num_experiments, num_steps))
 
-        for i in range(num_experiments):
-            professor = self.hive.create_actor(Professor)
-            assistant = self.hive.create_actor(Assistant)
+        allocation = worker_allocation(
+            self.worker_hives, range(num_experiments))
+        for i, hive_id in allocation:
+            response = yield self.wait_on_message(
+                to="hive@" + hive_id,
+                directive="create_actor",
+                body={
+                    "class": "xudd.demos.lotsamessages:Professor"})
+            professor = response.body['actor_id']
+
+            response = yield self.wait_on_message(
+                to="hive@" + hive_id,
+                directive="create_actor",
+                body={
+                    "class": "xudd.demos.lotsamessages:Assistant"})
+            assistant = response.body['actor_id']
             self.experiments_in_progress.add(professor)
             self.hive.send_message(
                 to=professor,
