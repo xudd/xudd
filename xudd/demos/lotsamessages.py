@@ -3,9 +3,11 @@
 from __future__ import print_function
 
 import argparse
+from math import ceil
 
 from xudd.hive import Hive
 from xudd.actor import Actor
+from xudd.lib.multiprocess import MultiProcessAmbassador
 
 
 class SuccessTracker(object):
@@ -13,21 +15,63 @@ class SuccessTracker(object):
         success = False
 
 
+def worker_allocation(jobs, workers):
+    """
+    Return jobs allocated to workers, hackily :)
+
+    Given an iterable of jobs to be processed, and an iterable of
+    available workers, it lines 'em up!
+    """
+    return zip(jobs, workers * int(ceil(len(jobs) / float(len(workers)))))
+
+
 class DepartmentChair(Actor):
     """
     Actor that initializes the world of this demo, starts the mission,
     and sends information about what's going on back to the user.
     """
-    def __init__(self, hive, id):
+    def __init__(self, hive, id, num_worker_processes=0):
         super(DepartmentChair, self).__init__(hive, id)
 
         self.message_routing.update(
             {"oversee_experiments": self.oversee_experiments,
-             "experiment_is_done": self.experiment_is_done})
+             "experiment_is_done": self.experiment_is_done,
+             "setup_worker_processes": self.setup_worker_processes})
         self.experiments_in_progress = set()
         self.success_tracker = None
+        self.num_worker_processes = num_worker_processes
+        # we set this up in setup()
+        self.worker_hives = []
+
+    def setup_worker_hives(self, message):
+        """
+        Set up all our worker hives, if they aren't already.
+
+        Note, if self.num_worker_processes is 0, we just set our own hive
+        as the worker hive.
+        """
+        if self.worker_hives:
+            # already set up!
+            return
+
+        if self.num_worker_processes > 0:
+            # set up worker processes, record hive ids
+            for worker_hive, i in range(self.num_worker_processes):
+                # Create the delegate
+                ambassador = self.hive.create_actor(MultiProcessAmbassador)
+                response = yield self.wait_on_message(
+                    to=ambassador,
+                    directive="get_remote_hive_id")
+
+                self.worker_hives.append(response.body["hive_id"])
+        else:
+            self.worker_hives = [self.hive.hive_id]
 
     def oversee_experiments(self, message):
+        yield self.wait_on_message(
+            to=self.id,
+            directive="setup_worker_processes")
+
         num_experiments = message.body['num_experiments']
         num_steps = message.body['num_steps']
 
@@ -101,7 +145,8 @@ DEFAULT_NUM_EXPERIMENTS = 20
 DEFAULT_NUM_STEPS = 5000
 
 
-def main(num_experiments=DEFAULT_NUM_STEPS, num_steps=DEFAULT_NUM_STEPS):
+def main(num_experiments=DEFAULT_NUM_STEPS, num_steps=DEFAULT_NUM_STEPS,
+         subprocesses=None):
     """
     Returns True if the experiment was a success.
     """
@@ -142,7 +187,7 @@ def cli():
         default=None, type=int)
 
     args = parser.parse_args()
-    main(args.experiments, args.steps)
+    main(args.experiments, args.steps, args.subprocesses)
 
 
 if __name__ == "__main__":

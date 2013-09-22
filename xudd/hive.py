@@ -265,3 +265,7 @@ class HiveProxy(object):
 
     def gen_message_id(self, *args, **kwargs):
         return self._hive.gen_message_id(*args, **kwargs)
+
+    @property
+    def hive_id(self):
+        return self._hive.hive_id

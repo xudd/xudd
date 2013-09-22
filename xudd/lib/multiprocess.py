@@ -13,6 +13,8 @@ def spawn_multiprocess_hive(hive_id, to_hive_queue, from_hive_queue):
 class MultiProcessAmbassador(Actor):
     def __init__(self, hive, id):
         super(MultiProcessAmbassador, self).__init__(hive, id)
+        self.message_routing.update(
+            {"get_remote_hive_id": self.get_remote_hive_id})
 
     def setup(self):
         # Spawn the remote hive
@@ -32,6 +34,9 @@ class MultiProcessAmbassador(Actor):
             directive="register_ambassador",
             body={
                 "hive_id": self.remote_hive_id})
+
+    def get_remote_hive_id(self, message):
+        message.reply({"hive_id": self.remote_hive_id})        
 
 
 class MultiProcessHive(Hive):
