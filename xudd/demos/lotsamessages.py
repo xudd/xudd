@@ -136,6 +136,10 @@ def cli():
         "-s", "--steps",
         help="Number of steps each experiment should require",
         default=DEFAULT_NUM_STEPS, type=int)
+    parser.add_argument(
+        "-p", "--subprocesses",
+        help="Number of multiprocess subprocesses to run these tasks",
+        default=None, type=int)
 
     args = parser.parse_args()
     main(args.experiments, args.steps)
