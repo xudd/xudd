@@ -36,8 +36,10 @@ def split_id(actor_id):
     return components
 
 
-def join_id(actor_id, hive):
-    assert not is_qualified_id(actor_id)
+def join_id(actor_id, hive, assert_not_qualified=True):
+    if assert_not_qualified:
+        assert not is_qualified_id(actor_id)
+
     return "%s@%s" % (actor_id, hive)
 
 
