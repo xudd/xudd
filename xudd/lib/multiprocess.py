@@ -36,7 +36,7 @@ class MultiProcessAmbassador(Actor):
                 "hive_id": self.remote_hive_id})
 
     def get_remote_hive_id(self, message):
-        message.reply({"hive_id": self.remote_hive_id})        
+        message.reply({"hive_id": self.remote_hive_id})
 
 
 class MultiProcessHive(Hive):
