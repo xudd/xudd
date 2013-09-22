@@ -36,6 +36,11 @@ def split_id(actor_id):
     return components
 
 
+def join_id(actor_id, hive):
+    assert not is_qualified_id(actor_id)
+    return "%s@%s" % (actor_id, hive)
+
+
 def possibly_qualify_id(actor_id, hive_id):
     """If this actor doesn't already have a hive id assigned to it, assign it
 
