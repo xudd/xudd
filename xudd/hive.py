@@ -7,7 +7,9 @@ from itertools import count
 from xudd import PY2
 
 from xudd.message import Message
-from xudd.tools import base64_uuid4, possibly_qualify_id, split_id
+from xudd.tools import (
+    base64_uuid4, possibly_qualify_id, split_id,
+    import_component)
 from xudd.actor import Actor
 
 _log = logging.getLogger(__name__)
@@ -58,7 +60,8 @@ class Hive(Actor):
         # Extend message routing
         self.message_routing.update(
             {"register_ambassador": self.register_ambassador,
-             "unregister_ambassador": self.unregister_ambassador})
+             "unregister_ambassador": self.unregister_ambassador,
+             "create_actor": self.create_actor_handler})
 
         # Register ourselves on... ourselves ;)
         self.register_actor(self)
@@ -226,6 +229,22 @@ class Hive(Actor):
         # (though this only possibly could help find bugs)
         assert old_ambassador_id == from_actor_id
 
+    # NOTE: If we eventually get to the point where we don't
+    # necessarily trust outside hives, THIS MUST BE MOVED TO A MIXIN.
+    def create_actor_handler(self, message):
+        """
+        Handling create_actor, from an actor's message.
+
+        Useful for spawning actors remotely over inter-hive communication.
+        """
+        actor_class = message.body['class']
+        actor_args = message.body.get('args', [])
+        actor_kwargs = message.body.get('kwargs', {})
+
+        actor_class = import_component(actor_class)
+        actor_id = self.create_actopr(actor_class, *actor_args, **actor_kwargs)
+        message.reply({'actor_id': actor_id})
+
 
 class HiveProxy(object):
     """
@@ -269,3 +288,4 @@ class HiveProxy(object):
     @property
     def hive_id(self):
         return self._hive.hive_id
+
