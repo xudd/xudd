@@ -5,6 +5,7 @@ from __future__ import print_function
 import argparse
 from math import ceil
 
+from xudd.tools import join_id
 from xudd.hive import Hive
 from xudd.actor import Actor
 from xudd.lib.multiprocess import MultiProcessAmbassador
@@ -25,6 +26,9 @@ def worker_allocation(jobs, workers):
     work (ie,
       >>> ['a', 'b'] * 2
       ['a', 'b', 'a', 'b']
+
+    NOTE: This function is just for this demo.  Don't use it for
+    production code... it doesn't scale nicely :)
     """
     # This method is evil, and the comment only barely helps
     return zip(
@@ -94,14 +98,14 @@ class DepartmentChair(Actor):
             self.worker_hives, range(num_experiments))
         for i, hive_id in allocation:
             response = yield self.wait_on_message(
-                to="hive@" + hive_id,
+                to=join_id("hive", hive_id),
                 directive="create_actor",
                 body={
                     "class": "xudd.demos.lotsamessages:Professor"})
             professor = response.body['actor_id']
 
             response = yield self.wait_on_message(
-                to="hive@" + hive_id,
+                to=join_id("hive", hive_id),
                 directive="create_actor",
                 body={
                     "class": "xudd.demos.lotsamessages:Assistant"})
