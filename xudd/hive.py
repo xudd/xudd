@@ -242,7 +242,7 @@ class Hive(Actor):
         actor_kwargs = message.body.get('kwargs', {})
 
         actor_class = import_component(actor_class)
-        actor_id = self.create_actopr(actor_class, *actor_args, **actor_kwargs)
+        actor_id = self.create_actor(actor_class, *actor_args, **actor_kwargs)
         message.reply({'actor_id': actor_id})
 
 
