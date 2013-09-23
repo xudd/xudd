@@ -95,7 +95,7 @@ class DepartmentChair(Actor):
             num_experiments, num_steps))
 
         allocation = worker_allocation(
-            self.worker_hives, range(num_experiments))
+            range(num_experiments), self.worker_hives)
         for i, hive_id in allocation:
             response = yield self.wait_on_message(
                 to=join_id("hive", hive_id),
