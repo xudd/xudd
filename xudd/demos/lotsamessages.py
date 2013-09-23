@@ -3,7 +3,6 @@
 from __future__ import print_function
 
 import argparse
-from math import ceil
 
 from xudd.tools import join_id
 from xudd.hive import Hive
@@ -17,25 +16,26 @@ class SuccessTracker(object):
 
 
 def worker_allocation(jobs, workers):
-    """Return jobs allocated to workers, hackily :)
+    """
+    Return jobs allocated to workers.  Lazy implementation.
 
     Given an iterable of jobs to be processed, and an iterable of
     available workers, it lines 'em up!
-
-    workers iterable must be "multiplyable", like a list, for this to
-    work (ie,
-      >>> ['a', 'b'] * 2
-      ['a', 'b', 'a', 'b']
-
-    NOTE: This function is just for this demo.  Don't use it for
-    production code... it doesn't scale nicely :)
     """
-    # This method is evil, and the comment only barely helps
-    return zip(
-        jobs,
-        # repeated loop of workers for as many times as it takes
-        # to have enough to fulfill all these jobs
-        workers * int(ceil(len(jobs) / float(len(workers)))))
+    worker_len = len(workers)
+    assert worker_len != 0
+    current_worker = 0
+
+    allocation = []
+
+    for job in jobs:
+        allocation.append((job, workers[current_worker]))
+
+        current_worker += 1
+        if current_worker >= worker_len:
+            current_worker = 0
+
+    return allocation
 
 
 class DepartmentChair(Actor):
