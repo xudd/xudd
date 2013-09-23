@@ -69,7 +69,7 @@ class DepartmentChair(Actor):
 
         if self.num_worker_processes > 0:
             # set up worker processes, record hive ids
-            for worker_hive, i in range(self.num_worker_processes):
+            for i in range(self.num_worker_processes):
                 # Create the delegate
                 ambassador = self.hive.create_actor(MultiProcessAmbassador)
                 response = yield self.wait_on_message(
