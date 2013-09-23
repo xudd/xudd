@@ -210,7 +210,7 @@ def cli():
     parser.add_argument(
         "-p", "--subprocesses",
         help="Number of multiprocess subprocesses to run these tasks",
-        default=None, type=int)
+        default=0, type=int)
 
     args = parser.parse_args()
     main(args.experiments, args.steps, args.subprocesses)
