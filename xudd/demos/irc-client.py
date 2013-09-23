@@ -67,19 +67,20 @@ class IRCBot(Actor):
 
     def handle_login(self, message):
         _log.info('Logging in')
-        msg = 'USER {user} {hostname} {servername} :{realname}'.format(
+        lines = [
+            'USER {user} {hostname} {servername} :{realname}'.format(
                         user=self.user,
                         hostname='*',
                         servername='*',
                         realname=self.realname
-                    )
-        msg += '\r\n'
-        msg += 'NICK {nick}'.format(nick=self.nick)
+            ),
+            'NICK {nick}'.format(nick=self.nick)
+        ]
 
         message.reply(
             directive='reply',
             body={
-                'line': msg
+                'lines': lines
             })
 
 

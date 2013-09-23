@@ -36,15 +36,25 @@ class IRCClient(Actor):
 
     def send_if_line(self, original_message, response_from_handler):
         if 'line' in response_from_handler.body:
-            msg = self.encode(response_from_handler.body['line']) + IRC_EOL
+            lines = [response_from_handler.body['line']]
+        elif 'lines' in response_from_handler.body:
+            lines = response_from_handler.body['lines']
+        else:
+            return
 
-            original_message.reply(
-                directive=u'send',
-                body={
-                    'message': msg
-                })
+        message = ''
 
-            _log.debug(' >>> {!r}'.format(msg))
+        for line in lines:
+            _line = self.encode(line) + IRC_EOL
+            _log.debug(' >>> {!r}'.format(_line))
+            message += _line
+
+        original_message.reply(
+            directive=u'send',
+            body={
+                'message': message
+            })
+
 
     def handle_chunk(self, message):
         self.incoming += message.body['chunk']
@@ -55,8 +65,6 @@ class IRCClient(Actor):
             response = yield self.wait_on_message(
                 to=self.message_handler,
                 directive='handle_login')
-
-            _log.debug('RESPONSE: {0.body!r}'.format(response))
 
             self.send_if_line(message, response)
 

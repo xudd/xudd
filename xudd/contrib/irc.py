@@ -4,6 +4,9 @@
 ###############################################################################
 
 import re
+import logging
+
+_log = logging.getLogger(__name__)
 
 class ParsedMessage(object):
     """This class represents a received message in IRC protocol.
@@ -45,7 +48,7 @@ class ParsedMessage(object):
         # The command and params are separated into separate variables.
         message = message.split(None, 1)
         if len(message) < 2:
-            print('Bad message found')
+            _log.critical('Bad message found')
             return
         else:
             self.command, self.params = message
