@@ -1,3 +1,4 @@
+import sys
 import base64
 import uuid
 
@@ -63,3 +64,19 @@ def possibly_qualify_id(actor_id, hive_id):
         return actor_id
 
     return u"%s@%s" % (actor_id, hive_id)
+
+
+def import_component(import_string):
+    """
+    Import a module component defined by STRING.  Probably a method,
+    class, or global variable.
+
+    Args:
+     - import_string: a string that defines what to import.  Written
+       in the format of "module1.module2:component"
+    """
+    module_name, func_name = import_string.split(':', 1)
+    __import__(module_name)
+    module = sys.modules[module_name]
+    func = getattr(module, func_name)
+    return func
