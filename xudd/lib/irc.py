@@ -42,7 +42,7 @@ class IRCClient(Actor):
         else:
             return
 
-        message = ''
+        message = self.encode('')
 
         for line in lines:
             _line = self.encode(line) + IRC_EOL
@@ -54,7 +54,6 @@ class IRCClient(Actor):
             body={
                 'message': message
             })
-
 
     def handle_chunk(self, message):
         self.incoming += message.body['chunk']
