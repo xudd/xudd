@@ -76,13 +76,14 @@ class Server(Actor):
 
 
 class Client(Actor):
-    def __init__(self, hive, id, chunk_handler=None):
+    def __init__(self, hive, id, chunk_handler=None, poll_timeout=10):
         super(Client, self).__init__(hive, id)
         self.message_routing.update({
             'connect': self.connect,
             'send': self.send,
         })
 
+        self.poll_timout = poll_timeout
         self.chunk_handler = chunk_handler
 
     def connect(self, message):
@@ -101,25 +102,35 @@ class Client(Actor):
         self.socket = socket.create_connection((host, port), timeout)
         self.socket.setblocking(0)  # XXX: Don't know if this helps much
 
+        READ_ONLY = select.POLLIN | select.POLLPRI | select.POLLHUP \
+            | select.POLLERR
+
+        poller = select.poll()
+        poller.register(self.socket, READ_ONLY)
+
+        socket_from_fd = {
+            self.socket.fileno(): self.socket
+        }
+
         _log.info('Connected to {host}:{port}'.format(host=host, port=port))
 
         while True:
-            readable, writable, errored = select.select(
-                [self.socket],
-                [],
-                [],
-                .0000001)  # XXX: This will surely make it fast! (?)
+            events = poller.poll(self.poll_timout)
 
-            if readable:
-                chunk = self.socket.recv(chunk_size)
+            for fd, flag in events:
+                sock = socket_from_fd[fd]
 
-                if chunk in ['', b'']:
-                    raise RuntimeError('socket connection broken')
+                if flag & (select.POLLIN | select.POLLPRI):
+                    if sock is self.socket:
+                        chunk = self.socket.recv(chunk_size)
 
-                self.send_message(
-                    to=self.chunk_handler,
-                    directive='handle_chunk',
-                    body={'chunk': chunk})
+                        if chunk in ['', b'']:
+                            raise RuntimeError('socket connection broken')
+
+                        self.send_message(
+                            to=self.chunk_handler,
+                            directive='handle_chunk',
+                            body={'chunk': chunk})
 
             yield self.wait_on_self()
 
