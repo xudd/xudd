@@ -18,7 +18,9 @@ _log = logging.getLogger(__name__)
 class SMTPClient(Actor):
     """SMTP client
 
-    This is where I explain how to extend this basic client
+    This is where I explain why I wrote this client this way and how to extend
+    it! Also, go into depth on the subject of those barking dogs at the
+    beginning of the book. (You'd forgotten about those, hadn't you?)
 
     TODO: logging!
     """
