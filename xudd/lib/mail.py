@@ -21,8 +21,6 @@ class SMTPClient(Actor):
     This is where I explain why I wrote this client this way and how to extend
     it! Also, go into depth on the subject of those barking dogs at the
     beginning of the book. (You'd forgotten about those, hadn't you?)
-
-    TODO: logging!
     """
     def __init__(self, hive, id, encoding='utf8'):
         super(SMTPClient, self).__init__(hive, id)
@@ -99,6 +97,7 @@ class SMTPClient(Actor):
             return
 
         if numeric != 220:
+            _log.error("Didn't get 220 from server on connection")
             self.quit()
             return
 
@@ -121,6 +120,7 @@ class SMTPClient(Actor):
             return
 
         if numeric != 250:
+            _log.error("Aborting before MAIL command")
             self.quit()
             return
         self.message_routing.update({'handle_chunk': self.rcpt})
@@ -144,6 +144,7 @@ class SMTPClient(Actor):
         # Is this a reply from a MAIL FROM or a RCPT TO?
         if self.mail_from:
             if numeric != 250:
+                _log.error("Aborting before first RCPT command")
                 self.quit()
                 return
             else:
@@ -159,6 +160,7 @@ class SMTPClient(Actor):
             rcpt = self.rcpt_to.pop()
         except IndexError:
             # We'll send the DATA command here - we wanted to catch RCPT errors first
+            _log.debug(str(self.rcpt_err))
             self.message_routing.update({'handle_chunk': self.data})
             self.send_message(
                 to=self.connection,
@@ -185,6 +187,7 @@ class SMTPClient(Actor):
             return
 
         if numeric != 354:
+            _log.error("Aborting after DATA command")
             self.quit()
             return
 
@@ -216,7 +219,7 @@ class SMTPClient(Actor):
             # message has no body
             pass
 
-
+        _log.info("Sending QUIT command to server")
         self.message_routing.update({'handle_chunk': self.noop})
         self.send_message(
             to=self.connection,
