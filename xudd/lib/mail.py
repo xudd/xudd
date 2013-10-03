@@ -18,9 +18,13 @@ _log = logging.getLogger(__name__)
 class SMTPClient(Actor):
     """SMTP client
 
-    This is where I explain why I wrote this client this way and how to extend
-    it! Also, go into depth on the subject of those barking dogs at the
-    beginning of the book. (You'd forgotten about those, hadn't you?)
+    The basic idea behind this client was to take full advantage of message
+    passing intra-actor and also give the user the ability to use subclassing
+    to extend functionality.
+
+    For example, if you wanted to add ESTMP support override
+    SMTPClient.greeting so it now updates 'handle_chunk' in message_routing to
+    point to your method for handling ESTMP extensions
     """
     def __init__(self, hive, id, encoding='utf8'):
         super(SMTPClient, self).__init__(hive, id)
