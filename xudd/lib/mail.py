@@ -38,6 +38,7 @@ class SMTPClient(Actor):
         self.message_routing.update({
             'handle_chunk': self.noop,
             'connect': self.connect,
+            'setup': self.setup,
             'quit': self.quit,
             
         })
@@ -49,7 +50,7 @@ class SMTPClient(Actor):
 
         Excepts to be called from a xudd.lib.tcp.Client
         """
-        self.handle_chunk(message.body)
+        self.handle_chunk(message)
 
     def setup(self, message):
         """Set various variables
@@ -105,7 +106,7 @@ class SMTPClient(Actor):
         self.send_message(
             to=self.connection,
             directive='send',
-            body={'message': "HELO %s" % self.helo_name}
+            body={'message': "HELO %s%s" % (self.helo_name, EOL)}
         )
 
     def mail(self, message):
@@ -126,7 +127,7 @@ class SMTPClient(Actor):
         self.send_message(
             to=self.connection,
             directive='send',
-            body={'message': "MAIL FROM:%s" % self.mail_from}
+            body={'message': "MAIL FROM:%s%s" % (self.mail_from, EOL)}
         )
 
     def rcpt(self, message):
@@ -162,13 +163,14 @@ class SMTPClient(Actor):
             self.send_message(
                 to=self.connection,
                 directive='send',
-                body={'message': 'DATA'}
+                body={'message': 'DATA' + EOL}
             )
+            return
         
         self.send_message(
             to=self.connection,
             directive='send',
-            body={'message': "RCPT TO:%s" % rcpt}
+            body={'message': "RCPT TO:%s%s" % (rcpt,EOL)}
         )
 
     def data(self, message):
@@ -210,13 +212,16 @@ class SMTPClient(Actor):
             # We haven't reached EOL yet
             if message:
                 return
+        except AttributeError:
+            # message has no body
+            pass
 
 
         self.message_routing.update({'handle_chunk': self.noop})
         self.send_message(
             to=self.connection,
-            directive='send',
-            body={'message': 'QUIT'}
+            directive=u'send',
+            body={'message': 'QUIT' + EOL}
         )
 
     def handle_chunk(self, message):
@@ -231,7 +236,9 @@ class SMTPClient(Actor):
             line, self.incoming = self.incoming.split(EOL, 1)
 
             # format data into numeric + message
-            return line.split(' ', 1)
+            numeric, msg = line.split(' ', 1)
+            numeric = int(numeric)
+            return [numeric, msg]
 
 class SMTPServer(Actor):
     """Simple SMTP server.
