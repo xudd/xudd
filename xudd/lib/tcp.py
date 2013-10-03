@@ -76,8 +76,31 @@ class Server(Actor):
 
 
 class Client(Actor):
+    """TCP client
+
+    Client can't do any processing on its own, it relies on another actor to
+    take the data it receives.
+
+    Once connected it will gather data and send chunks it receives to the
+    other actor like this:
+
+        self.send_message(
+            to=self.chunk_handler,
+            directive='handle_chunk',
+            body={'chunk': b'some bytes'})
+
+    """
     def __init__(self, hive, id, chunk_handler=None, poll_timeout=10):
+        """Initialize the client
+
+        - *chunk_handler*: ID of the actor that will be given data as we
+        receive it through the socket. *Must* have a directive called
+        'handle_chunk'
+        - *poll_timeout*: number of milliseconds to wait for data before
+        returning collected (if any) data
+        """
         super(Client, self).__init__(hive, id)
+
         self.message_routing.update({
             'connect': self.connect,
             'send': self.send,
@@ -87,6 +110,19 @@ class Client(Actor):
         self.chunk_handler = chunk_handler
 
     def connect(self, message):
+        """Connect to a server
+
+        The body of the message should be dict that contains the following keys:
+        - *host*: domain name or IP address of server to connect to
+        - *port*: port number to connect to
+
+        It may also contain the following options:
+        - *timeout*: the integer amount of time in seconds a connection will
+        wait with no data before closing itself. Defaults to no timeout or the
+        last value give to socket.setdefaulttimeout() (see Python docs)
+        - *chunk_size*: size of the receive buffer, idealy a smaller power of 2.
+        Defaults to 1024
+        """
         try:
             host = message.body['host']
             port = message.body['port']
@@ -101,6 +137,7 @@ class Client(Actor):
 
         self.socket = socket.create_connection((host, port), timeout)
         self.socket.setblocking(0)  # XXX: Don't know if this helps much
+        # M says: docs aren't clear on a non-zero timeout + the above
 
         READ_ONLY = select.POLLIN | select.POLLPRI | select.POLLHUP \
             | select.POLLERR
@@ -135,6 +172,10 @@ class Client(Actor):
             yield self.wait_on_self()
 
     def send(self, message):
+        """Send
+
+        Does what it says on the tin.
+        """
         out = message.body['message']
         length = len(out)
         total_sent = 0
