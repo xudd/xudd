@@ -7,7 +7,7 @@ from xudd.actor import Actor
 _log = logging.getLogger(__name__)
 
 class Server(Actor):
-    def __init__(self, hive, id=None, request_handler=None):
+    def __init__(self, hive, id, request_handler=None):
         super(Server, self).__init__(hive, id)
         self.message_routing.update({
             'respond': self.respond,
