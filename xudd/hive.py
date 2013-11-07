@@ -216,7 +216,7 @@ class Hive(Actor):
         from_actor_id, from_hive_id = split_id(message.to)
         # Make sure this actor is from our hive
         assert from_hive_id == self.hive_id or from_hive_id is None
-        self.ambassadors[message.body["hive_id"]] = from_actor_id
+        self._ambassadors[message.body["hive_id"]] = from_actor_id
 
     def unregister_ambassador(self, message):
         """
@@ -224,7 +224,7 @@ class Hive(Actor):
         """
         from_actor_id, from_hive_id = split_id(message.to)
         assert from_hive_id == self.hive_id or from_hive_id is None
-        old_ambassador_id = self.ambassadors.pop(message.body["hive_id"])
+        old_ambassador_id = self._ambassadors.pop(message.body["hive_id"])
         # Make sure this actor is really the one it said it was
         # (though this only possibly could help find bugs)
         assert old_ambassador_id == from_actor_id
