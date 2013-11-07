@@ -67,6 +67,10 @@ class DepartmentChair(Actor):
             # already set up!
             return
 
+        # Okay, so we need to possibly yield and set things up, so
+        # defer a reply here
+        message.defer_reply()
+
         if self.num_worker_processes > 0:
             # set up worker processes, record hive ids
             for i in range(self.num_worker_processes):
@@ -82,6 +86,8 @@ class DepartmentChair(Actor):
                 self.worker_hives.append(response.body["hive_id"])
         else:
             self.worker_hives = [self.hive.hive_id]
+
+        message.reply()
 
     def oversee_experiments(self, message):
         yield self.wait_on_message(
