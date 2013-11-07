@@ -14,9 +14,10 @@ class MultiProcessAmbassador(Actor):
     def __init__(self, hive, id):
         super(MultiProcessAmbassador, self).__init__(hive, id)
         self.message_routing.update(
-            {"get_remote_hive_id": self.get_remote_hive_id})
+            {"get_remote_hive_id": self.get_remote_hive_id,
+             "setup": self.setup})
 
-    def setup(self):
+    def setup(self, message):
         # Spawn the remote hive
         self.remote_hive_id = base64_uuid4()
         self.to_hive_queue = Queue()

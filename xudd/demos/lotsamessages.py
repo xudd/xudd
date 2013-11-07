@@ -74,6 +74,9 @@ class DepartmentChair(Actor):
                 ambassador = self.hive.create_actor(MultiProcessAmbassador)
                 response = yield self.wait_on_message(
                     to=ambassador,
+                    directive="setup")
+                response = yield self.wait_on_message(
+                    to=ambassador,
                     directive="get_remote_hive_id")
 
                 self.worker_hives.append(response.body["hive_id"])
@@ -181,7 +184,7 @@ def main(num_experiments=DEFAULT_NUM_STEPS, num_steps=DEFAULT_NUM_STEPS,
     hive = Hive()
 
     department_chair = hive.create_actor(
-        DepartmentChair)
+        DepartmentChair, num_worker_processes=subprocesses or 0)
 
     hive.send_message(
         to=department_chair,
