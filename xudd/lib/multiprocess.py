@@ -28,6 +28,7 @@ class MultiProcessAmbassador(Actor):
                 self.remote_hive_id,
                 self.to_hive_queue,
                 self.from_hive_queue))
+        self.multiproces_hive_proc.start()
 
         # Declare ourselves the ambassador for this hive
         self.send_message(
