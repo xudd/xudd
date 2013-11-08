@@ -90,6 +90,8 @@ class Hive(Actor):
             directive=directive, body=body,
             in_reply_to=in_reply_to, id=message_id, wants_reply=wants_reply)
 
+        _log.debug("send_message: %s", message)
+
         self._message_queue.append(message)
         return message_id
 
