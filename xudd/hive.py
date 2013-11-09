@@ -171,6 +171,7 @@ class Hive(Actor):
             to=join_id(ambassador.id, self.hive_id),
             directive="forward_message",
             from_id=join_id(self.id, self.hive_id),
+            id=self.gen_message_id(),
             body={
                 "to": message.to,
                 "directive": message.directive,
