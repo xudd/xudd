@@ -41,7 +41,7 @@ def join_id(actor_id, hive, assert_not_qualified=True):
     if assert_not_qualified:
         assert not is_qualified_id(actor_id)
 
-    return "%s@%s" % (actor_id, hive)
+    return u"%s@%s" % (actor_id, hive)
 
 
 def possibly_qualify_id(actor_id, hive_id):
