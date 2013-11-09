@@ -8,7 +8,7 @@ from xudd import PY2
 
 from xudd.message import Message
 from xudd.tools import (
-    base64_uuid4, possibly_qualify_id, split_id,
+    base64_uuid4, possibly_qualify_id, join_id, split_id,
     import_component)
 from xudd.actor import Actor
 
@@ -147,9 +147,40 @@ class Hive(Actor):
 
             ## Looks like the actor must be remote, forward it!
             else:
-                raise NotImplementedError(
-                    "Heh, don't have remote actors yet ;)")
+                # Get the associated ambassador
+                ## TODO: error handling if hive doesn't exist ;)
+                ambassador = self._ambassadors[hive_id]
 
+                # repackage the message for sending
+                repackaged_message = self._repackage_message_for_forwarding(
+                    message, ambassador)
+
+                # send it off!
+                ambassador.handle_message(repackaged_message)
+
+
+    def _repackage_message_for_forwarding(self, message, ambassador):
+        """
+        Repackage a message for forwarding
+
+        Doesn't attach the hive_proxy... do that in the parent of this method?
+        (TODO: Revisit that)
+        """
+        return Message(
+            to=ambassador.id,
+            directive="forward_message",
+            from_id=join_id(self.id, self.hive_id),
+            body={
+                "to": message.to,
+                "directive": message.directive,
+                "from_id": message.from_id,
+                "id": message.id,
+                "body": message.body,
+                "in_reply_to": message.in_reply_to,
+                "wants_reply": message.wants_reply,
+                "hive_proxy": ambassador.hive})
+        
+            
 
     def return_to_sender(self, message, directive="error.no_such_actor"):
         """
