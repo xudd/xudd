@@ -149,7 +149,8 @@ class Hive(Actor):
             else:
                 # Get the associated ambassador
                 ## TODO: error handling if hive doesn't exist ;)
-                ambassador = self._ambassadors[hive_id]
+                ambassador_id = self._ambassadors[hive_id]
+                ambassador = self._actor_registry[ambassador_id]
 
                 # repackage the message for sending
                 repackaged_message = self._repackage_message_for_forwarding(
@@ -167,7 +168,7 @@ class Hive(Actor):
         (TODO: Revisit that)
         """
         return Message(
-            to=ambassador.id,
+            to=join_id(ambassador.id, self.hive_id),
             directive="forward_message",
             from_id=join_id(self.id, self.hive_id),
             body={
@@ -244,7 +245,7 @@ class Hive(Actor):
         """
         Register this actor as being the ambassador for some specific hive id
         """
-        from_actor_id, from_hive_id = split_id(message.to)
+        from_actor_id, from_hive_id = split_id(message.from_id)
         # Make sure this actor is from our hive
         assert from_hive_id == self.hive_id or from_hive_id is None
         self._ambassadors[message.body["hive_id"]] = from_actor_id
@@ -253,7 +254,7 @@ class Hive(Actor):
         """
         Unregister this actor as being the ambassador for some specific hive id
         """
-        from_actor_id, from_hive_id = split_id(message.to)
+        from_actor_id, from_hive_id = split_id(message.from_id)
         assert from_hive_id == self.hive_id or from_hive_id is None
         old_ambassador_id = self._ambassadors.pop(message.body["hive_id"])
         # Make sure this actor is really the one it said it was
