@@ -14,4 +14,13 @@ def test_lotsamessages():
     """
     assert lotsamessages.main(num_experiments=20, num_steps=20) is True
 
+
+def test_lotsamessages_ihc():
+    """
+    Test the lotsamessages demo with inter-hive communication
+    """
+    assert lotsamessages.main(
+        num_experiments=20, num_steps=20, subprocesses=4) is True
+
+
 ### def test_ihc_lotsamessages():
