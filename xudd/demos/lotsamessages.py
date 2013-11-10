@@ -105,6 +105,9 @@ class DepartmentChair(Actor):
         print("Starting %s experiments with %s steps each" % (
             num_experiments, num_steps))
 
+        # A lazy hack to avoid race conditions
+        run_experiments = []
+
         allocation = worker_allocation(
             range(num_experiments), self.worker_hives)
         for i, hive_id in allocation:
@@ -122,6 +125,12 @@ class DepartmentChair(Actor):
                     "class": "xudd.demos.lotsamessages:Assistant"})
             assistant = response.body['actor_id']
             self.experiments_in_progress.add(professor)
+
+            run_experiments.append((professor, assistant))
+
+        # We do this on a separate loop to avoid the race conditions where some
+        # professors finish up before others even start
+        for professor, assistant in run_experiments:
             self.hive.send_message(
                 to=professor,
                 directive="run_experiments",
