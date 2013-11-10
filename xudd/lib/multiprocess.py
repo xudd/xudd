@@ -103,7 +103,9 @@ class MultiProcessHive(Hive):
 
         self.message_routing.update(
             {"connect_back": self.connect_back,
-             "forward_message": self.forward_message})
+             "forward_message": self.forward_message,
+             "remote_shutdown": self.remote_shutdown,
+             "remote_shutdown_step2": self.remote_shutdown_step2})
 
     def run(self):
         while not self.should_stop:
@@ -119,3 +121,20 @@ class MultiProcessHive(Hive):
             directive="register_ambassador",
             body={
                 "hive_id": message.body["parent_hive_id"]})
+
+    ### Waiiiit, why have a 2-step shutdown process?
+    # The reason is that the parent process needs to receive the
+    # "confirmation" that we shut down.  So we need to autoreply and
+    # send such a message.  But if we stop our loop, we won't send
+    # that message.
+    #
+    # So we allow the autoreply, then kick off another step to
+    # actually shut down our loop.  A goofy hack, but it works!
+    # ... I know that doesn't make much sense; trust me ;)
+    def remote_shutdown(self, message):
+        self.hive.send_message(
+            to=self.id,
+            directive="remote_shutdown_step2")
+
+    def remote_shutdown_step2(self, message):
+        self.should_stop = True

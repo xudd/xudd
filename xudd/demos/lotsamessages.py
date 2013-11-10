@@ -138,6 +138,13 @@ class DepartmentChair(Actor):
             if self.success_tracker is not None:
                 self.success_tracker.success = True
 
+            # Shut down all child hives too
+            if self.num_worker_processes > 0:
+                for worker_hive in self.worker_hives:
+                    yield self.wait_on_message(
+                        to=join_id("hive", worker_hive),
+                        directive="remote_shutdown")
+
             self.hive.send_shutdown()
 
 
