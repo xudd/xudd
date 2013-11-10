@@ -60,6 +60,7 @@ class Actor(object):
             coroutine = self._waiting_coroutines.pop(message.in_reply_to)
 
             # Send this message reply to this coroutine
+            _log.debug("Sending reply: %s", message)
             try:
                 message_id = coroutine.send(message)
             except StopIteration:
