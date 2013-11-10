@@ -179,8 +179,7 @@ class Hive(Actor):
                 "id": message.id,
                 "body": message.body,
                 "in_reply_to": message.in_reply_to,
-                "wants_reply": message.wants_reply,
-                "hive_proxy": ambassador.hive})
+                "wants_reply": message.wants_reply})
 
     def return_to_sender(self, message, directive="error.no_such_actor"):
         """
