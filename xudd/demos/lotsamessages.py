@@ -2,6 +2,7 @@
 """
 from __future__ import print_function
 
+import time
 import argparse
 
 from xudd.tools import join_id
@@ -96,6 +97,7 @@ class DepartmentChair(Actor):
 
         num_experiments = message.body['num_experiments']
         num_steps = message.body['num_steps']
+        slacker_time = message.body['slacker_time']
 
         if message.body.get('success_tracker'):
             self.success_tracker = message.body['success_tracker']
@@ -125,7 +127,8 @@ class DepartmentChair(Actor):
                 directive="run_experiments",
                 body={
                     "assistant_id": assistant,
-                    "numtimes": num_steps})
+                    "numtimes": num_steps,
+                    "slacker_time": slacker_time})
             
     def experiment_is_done(self, message):
         self.experiments_in_progress.remove(message.from_id)
@@ -164,7 +167,8 @@ class Professor(Actor):
         for i in range(message.body['numtimes']):
             yield self.wait_on_message(
                 to=assistant,
-                directive="run_errand")
+                directive="run_errand",
+                body={"slacker_time": message.body["slacker_time"]})
 
         self.hive.send_message(
             to=message.from_id,
@@ -179,6 +183,11 @@ class Assistant(Actor):
             {"run_errand": self.run_errand})
 
     def run_errand(self, message):
+        slacker_time = message.body.get("slacker_time", 0)
+
+        if slacker_time > 0:
+            time.sleep(slacker_time)
+
         message.reply(
             {"did_your_grunt_work": True})
 
@@ -188,7 +197,7 @@ DEFAULT_NUM_STEPS = 5000
 
 
 def main(num_experiments=DEFAULT_NUM_STEPS, num_steps=DEFAULT_NUM_STEPS,
-         subprocesses=None):
+         subprocesses=None, slacker_time=0):
     """
     Returns True if the experiment was a success.
     """
@@ -205,7 +214,8 @@ def main(num_experiments=DEFAULT_NUM_STEPS, num_steps=DEFAULT_NUM_STEPS,
         body={
             "num_experiments": num_experiments,
             "num_steps": num_steps,
-            "success_tracker": success_tracker})
+            "success_tracker": success_tracker,
+            "slacker_time": slacker_time})
 
     hive.run()
 
@@ -227,9 +237,15 @@ def cli():
         "-p", "--subprocesses",
         help="Number of multiprocess subprocesses to run these tasks",
         default=0, type=int)
+    parser.add_argument(
+        "-t", "--slacker-time",
+        help="Number of seconds for assistants to slack off each task",
+        default=0, type=float)
 
     args = parser.parse_args()
-    main(args.experiments, args.steps, args.subprocesses)
+    main(
+        args.experiments, args.steps, args.subprocesses,
+        args.slacker_time)
 
 
 if __name__ == "__main__":
