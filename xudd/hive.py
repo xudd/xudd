@@ -35,7 +35,7 @@ class Hive(Actor):
         hive_proxy.associate_with_actor(self)
 
         # id of the hive
-        self.hive_id = self.gen_actor_id()
+        self.hive_id = hive_id or self.gen_actor_id()
 
         # Which actors this hive is managing
         self._actor_registry = {}
