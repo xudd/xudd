@@ -4,6 +4,7 @@ from xudd.hive import Hive
 from xudd.actor import Actor
 from xudd.tools import base64_uuid4
 
+import json
 
 def spawn_multiprocess_hive(hive_id, to_hive_queue, from_hive_queue):
     hive = MultiProcessHive(hive_id, to_hive_queue, from_hive_queue)
@@ -15,7 +16,8 @@ class MultiProcessAmbassador(Actor):
         super(MultiProcessAmbassador, self).__init__(hive, id)
         self.message_routing.update(
             {"get_remote_hive_id": self.get_remote_hive_id,
-             "setup": self.setup})
+             "setup": self.setup,
+             "forward_message": self.forward_message})
 
     def setup(self, message):
         # Spawn the remote hive
@@ -40,6 +42,9 @@ class MultiProcessAmbassador(Actor):
     def get_remote_hive_id(self, message):
         message.reply({"hive_id": self.remote_hive_id})
 
+    def forward_message(self, message):
+        self.to_hive_queue.put(json.dumps(message.body))
+
 
 class MultiProcessHive(Hive):
     def __init__(self, hive_id, receive_queue, send_queue):
@@ -52,8 +57,10 @@ class MultiProcessHive(Hive):
         queue_len = self.receive_queue.qsize()
         for i in range(queue_len):
             # do we need exception handling here?
-            item = self.receive_queue.get()
-            pass
+            encoded_message = self.receive_queue.get()
+            message_dict = json.loads(encoded_message)
+            # TODO: less hokey version of this sending a message stuff
+            self.send_message(**message_dict)
 
     def run(self):
         while not self.should_stop:
