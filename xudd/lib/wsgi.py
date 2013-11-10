@@ -16,8 +16,8 @@ _log = logging.getLogger(__name__)
 
 
 class WSGI(Actor):
-    @super_init
     def __init__(self, hive, id, app=None):
+        super(WSGI, self).__init__(hive, id)
         self.message_routing.update({
             'handle_request': self.handle_request,
             'set_app': self.set_app

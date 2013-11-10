@@ -73,25 +73,33 @@ class Actor(object):
 
         # Otherwise, this is a new message to handle.
         # TODO: send back a warning message if this is an unhandled directive?
-        message_handler = self.message_routing[message.directive]
+        try:
+            message_handler = self.message_routing[message.directive]
 
-        result = message_handler(message)
+            result = message_handler(message)
 
-        # If this is a coroutine, then we should handle putting its
-        # results into the coroutine registry
-        if isinstance(result, GeneratorType):
-            coroutine = result
-            try:
-                message_id = result.send(None)
-            except StopIteration:
-                # Guess this coroutine ended without any yields
-                return None
+            # If this is a coroutine, then we should handle putting its
+            # results into the coroutine registry
+            if isinstance(result, GeneratorType):
+                coroutine = result
+                try:
+                    message_id = result.send(None)
+                except StopIteration:
+                    # Guess this coroutine ended without any yields
+                    return None
 
-            # since the coroutine returned a message_id that was sent,
-            # we should both add this message's id to the registry
-            # ... yes this is the same code as above
-            self._waiting_coroutines[message_id] = coroutine
-            return
+                # since the coroutine returned a message_id that was sent,
+                # we should both add this message's id to the registry
+                # ... yes this is the same code as above
+                self._waiting_coroutines[message_id] = coroutine
+                return
+        except KeyError:
+            _log.error(u'Unregistered directive {!r}.'.format(
+                message.directive))
+            _log.debug(u'Message details: {!r}, {!r}'.format(
+                message,
+                message.body
+            ))
 
     def send_message(self, *args, **kwargs):
         return self.hive.send_message(*args, **kwargs)
