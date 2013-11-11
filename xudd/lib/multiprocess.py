@@ -61,7 +61,7 @@ class MultiProcessAmbassador(Actor):
 
         # Declare ourselves the ambassador for this hive
         self.send_message(
-            to="hive",
+            to=join_id("hive", self.hive.hive_id),
             directive="register_ambassador",
             body={
                 "hive_id": self.remote_hive_id})
