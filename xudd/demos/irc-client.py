@@ -89,13 +89,13 @@ def connect():
 
     hive = Hive()
 
-    hive.create_actor(IRCBot, id='bot')
-    irc_id = hive.create_actor(IRCClient, id='irc', message_handler='bot')
+    bot_id = hive.create_actor(IRCBot, id='bot')
+    irc_id = hive.create_actor(IRCClient, id='irc', message_handler=bot_id)
     client_id = hive.create_actor(Client, id='tcp_client',
                                   chunk_handler=irc_id)
 
     hive.send_message(
-        to='tcp_client',
+        to=client_id,
         directive='connect',
         body={'host': 'irc.freenode.net', 'port': 6667})
 

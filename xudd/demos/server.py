@@ -16,6 +16,7 @@ except ImportError:
 
 from xudd.actor import Actor
 from xudd.hive import Hive
+from xudd.tools import join_id
 
 _log = logging.getLogger(__name__)
 
@@ -56,7 +57,7 @@ class Server(Actor):
 
                 # Use the message id as the internal id for the request
                 message_id = self.send_message(
-                    to='http',
+                    to=join_id('http', self.hive.hive_id),
                     directive='handle_request',
                     body={
                         'request': req
@@ -195,7 +196,7 @@ class HTTPHandler(Actor):
                 )
 
                 response = yield self.wait_on_message(
-                    to='wsgi',
+                    to=join_id('wsgi', self.hive.hive_id),
                     directive='handle_request',
                     body={
                         'body': body,
@@ -332,7 +333,7 @@ def main():
     hive.create_actor(HTTPHandler, id='http')
     hive.create_actor(WSGI, id='wsgi')
 
-    hive.send_message(to='server', directive='listen')
+    hive.send_message(to=server_id, directive='listen')
 
     try:
         hive.run()

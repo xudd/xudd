@@ -6,6 +6,7 @@ from __future__ import print_function
 
 from xudd.hive import Hive
 from xudd.actor import Actor
+from xudd.tools import join_id
 
 
 class SpecialHive(Hive):
@@ -44,7 +45,7 @@ class FanBoy(Actor):
 
     def nerd_out_to_hive(self, message):
         response = yield self.wait_on_message(
-            to="hive",
+            to=join_id("hive", self.hive.hive_id),
             directive="be_fanboyed")
 
         assert response.body['is_hive'] == True
