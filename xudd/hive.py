@@ -8,7 +8,7 @@ from xudd import PY2
 
 from xudd.message import Message
 from xudd.tools import (
-    base64_uuid4, possibly_qualify_id, join_id, split_id,
+    base64_uuid4, is_qualified_id, join_id, split_id,
     import_component)
 from xudd.actor import Actor
 
@@ -28,14 +28,14 @@ class Hive(Actor):
     TODO: This docstring sucks ;)
     """
     def __init__(self, hive_id=None):
-        hive_proxy = self.gen_proxy()
-        super(Hive, self).__init__(
-            id="hive",
-            hive=hive_proxy)
-        hive_proxy.associate_with_actor(self)
-
         # id of the hive
         self.hive_id = hive_id or self.gen_actor_id()
+
+        hive_proxy = self.gen_proxy()
+        super(Hive, self).__init__(
+            id=join_id("hive", self.hive_id),
+            hive=hive_proxy)
+        hive_proxy.associate_with_actor(self)
 
         # Which actors this hive is managing
         self._actor_registry = {}
@@ -71,18 +71,21 @@ class Hive(Actor):
         """
         Register an actor on the hive
         """
-        if actor.id in self._actor_registry:
+        if actor.local_id in self._actor_registry:
             raise KeyError("Actor with that id already registered")
-        elif actor.id == "hive" and actor != self:
+        elif actor.local_id == "hive" and actor != self:
             # Only the hive itself can get this id!
             raise KeyError("The actor id 'hive' is reserved")
 
-        self._actor_registry[actor.id] = actor
+        self._actor_registry[actor.local_id] = actor
 
     def remove_actor(self, actor_id):
         """
         Remove an actor from the hive
         """
+        if is_qualified_id(actor_id):
+            actor_id = split_id(actor_id)[0]
+
         self._actor_registry.pop(actor_id)
 
     def send_message(self, to, directive,
@@ -97,8 +100,8 @@ class Hive(Actor):
         """
         message_id = id or self.gen_message_id()
         message = Message(
-            to=possibly_qualify_id(to, self.hive_id),
-            from_id=possibly_qualify_id(from_id, self.hive_id),
+            to=to,
+            from_id=from_id,
             directive=directive, body=body,
             in_reply_to=in_reply_to, id=message_id, wants_reply=wants_reply)
 
@@ -126,7 +129,6 @@ class Hive(Actor):
             message = self._message_queue.popleft()
 
             # Route appropriately here
-
             actor_id, hive_id = split_id(message.to)
 
             ## Is the actor local?  Send it!
@@ -170,9 +172,9 @@ class Hive(Actor):
         (TODO: Revisit that)
         """
         return Message(
-            to=join_id(ambassador.id, self.hive_id),
+            to=ambassador.id,
             directive="forward_message",
-            from_id=join_id(self.id, self.hive_id),
+            from_id=self.id,
             id=self.gen_message_id(),
             body={
                 "to": message.to,
@@ -224,14 +226,16 @@ class Hive(Actor):
 
     def create_actor(self, actor_class, *args, **kwargs):
         hive_proxy = self.gen_proxy()
-        actor_id = kwargs.pop("id", None) or self.gen_actor_id()
+        actor_id = join_id(
+            kwargs.pop("id", None) or self.gen_actor_id(),
+            self.hive_id)
 
         actor = actor_class(
             hive_proxy, actor_id, *args, **kwargs)
         hive_proxy.associate_with_actor(actor)
         self.register_actor(actor)
 
-        return possibly_qualify_id(actor_id, self.hive_id)
+        return actor_id
 
     def send_shutdown(self):
         # We should have a more graceful shutdown feature that gives

@@ -1,8 +1,8 @@
-from functools import wraps
-
 from types import GeneratorType
-
+from functools import wraps
 import logging
+
+from xudd.tools import split_id
 
 
 _log = logging.getLogger(__name__)
@@ -41,6 +41,7 @@ class Actor(object):
     def __init__(self, hive, id):
         self.hive = hive
         self.id = id
+        self.local_id = split_id(id)[0]
 
         # Routing of messages to handler functions
         self.message_routing = {}

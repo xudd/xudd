@@ -196,9 +196,9 @@ def main():
     hive = Hive()
 
     # Add overseer, who populates the world and runs the simulation
-    hive.create_actor(Overseer, id="overseer")
+    overseer_id = hive.create_actor(Overseer, id="overseer")
     hive.send_message(
-        to="overseer",
+        to=overseer_id,
         directive="init_world")
 
     # Actually initialize the world

@@ -21,6 +21,7 @@ import logging
 
 from xudd.hive import Hive
 from xudd.actor import Actor
+from xudd.tools import join_id
 
 _log = logging.getLogger(__name__)
 
@@ -221,10 +222,12 @@ class SecurityRobot(Actor):
     def begin_mission(self, message):
         self.room = message.body['starting_room']
 
+        overseer_id = join_id("overseer", self.hive.hive_id)
+
         # Walk through all rooms, clearing out infected droids
         while True:
             self.hive.send_message(
-                to="overseer",
+                to=overseer_id,
                 directive="transmission",
                 body={
                     "message": "Entering room %s..." % self.room})
@@ -244,7 +247,7 @@ class SecurityRobot(Actor):
                     transmission = (
                         "%s is clean... moving on." % droid_id)
                     self.hive.send_message(
-                        to="overseer",
+                        to=overseer_id,
                         directive="transmission",
                         body={
                             "message": transmission})
@@ -255,7 +258,7 @@ class SecurityRobot(Actor):
                 transmission = (
                     "%s found to be infected... taking out" % droid_id)
                 self.hive.send_message(
-                    to="overseer",
+                    to=overseer_id,
                     directive="transmission",
                     body={
                         "message": transmission})
@@ -271,7 +274,7 @@ class SecurityRobot(Actor):
                     droid_status = self.__droid_status_format(response)
 
                     self.hive.send_message(
-                        to="overseer",
+                        to=overseer_id,
                         directive="transmission",
                         body={
                             "message": droid_status})
@@ -291,7 +294,7 @@ class SecurityRobot(Actor):
 
         # Good job everyone! Shut down the operation.
         yield self.wait_on_message(
-            to="overseer",
+            to=overseer_id,
             directive="transmission",
             body={
                 "message": "Mission accomplished."})
@@ -307,9 +310,9 @@ def main():
     hive = Hive()
 
     # Add overseer, who populates the world and reports things
-    hive.create_actor(Overseer, id="overseer")
+    overseer_id = hive.create_actor(Overseer, id="overseer")
     hive.send_message(
-        to="overseer",
+        to=overseer_id,
         directive="init_world")
 
     hive.run()
