@@ -1,4 +1,4 @@
-(import [xudd.actor [Actor super-init]])
+(import [xudd.actor [Actor]])
 (import [xudd.hive [Hive]])
 (import [xudd.demos.server [Server]])
 
