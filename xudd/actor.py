@@ -54,6 +54,8 @@ class Actor(object):
         """
         Handle a message being sent to this actor.
         """
+        coroutine_result = None
+
         # If this message is continuing a coroutine-in-waiting, we'll
         # handle that.
         if message.in_reply_to is not None \
@@ -63,38 +65,25 @@ class Actor(object):
             # Send this message reply to this coroutine
             _log.debug("Sending reply: %s", message)
             try:
-                message_id = coroutine.send(message)
+                coroutine_result = coroutine.send(message)
             except StopIteration:
                 # And our job is done
                 return
-
-            # since the coroutine returned a message_id that was sent,
-            # we should both add this message's id to the registry
-            self._waiting_coroutines[message_id] = coroutine
-            return
 
         # Otherwise, this is a new message to handle.
         # TODO: send back a warning message if this is an unhandled directive?
         try:
             message_handler = self.message_routing[message.directive]
-
             result = message_handler(message)
 
-            # If this is a coroutine, then we should handle putting its
-            # results into the coroutine registry
             if isinstance(result, GeneratorType):
                 coroutine = result
                 try:
-                    message_id = result.send(None)
+                    coroutine_result = coroutine.send(None)
                 except StopIteration:
                     # Guess this coroutine ended without any yields
                     return None
 
-                # since the coroutine returned a message_id that was sent,
-                # we should both add this message's id to the registry
-                # ... yes this is the same code as above
-                self._waiting_coroutines[message_id] = coroutine
-                return
         except KeyError:
             _log.error(u'Unregistered directive {!r}.'.format(
                 message.directive))
@@ -102,6 +91,20 @@ class Actor(object):
                 message,
                 message.body
             ))
+            ## Raise an exception here?  Probably?
+            # raise
+
+        # If this is a coroutine, then we should handle putting its
+        # results into the coroutine registry
+        if coroutine_result:
+            # since the coroutine returned a message_id that was sent,
+            # we should add this message's id to the registry
+            
+            # TODO: Clean this up in the asyncio branch
+            message_id = coroutine_result
+            self._waiting_coroutines[message_id] = coroutine
+            return
+
 
     def send_message(self, *args, **kwargs):
         return self.hive.send_message(*args, **kwargs)
