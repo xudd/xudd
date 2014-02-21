@@ -5,6 +5,12 @@ import uuid
 from xudd import PY2
 
 
+if PY2:
+    class MessageId(unicode): pass
+else:
+    class MessageId(str): pass
+
+
 def base64_uuid4():
     """
     Return a base64 encoded uuid4
