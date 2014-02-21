@@ -70,29 +70,30 @@ class Actor(object):
                 # And our job is done
                 return
 
-        # Otherwise, this is a new message to handle.
-        # TODO: send back a warning message if this is an unhandled directive?
-        try:
-            message_handler = self.message_routing[message.directive]
-            result = message_handler(message)
+        else:
+            # Otherwise, this is a new message to handle.
+            # TODO: send back a warning message if this is an unhandled directive?
+            try:
+                message_handler = self.message_routing[message.directive]
+                result = message_handler(message)
 
-            if isinstance(result, GeneratorType):
-                coroutine = result
-                try:
-                    coroutine_result = coroutine.send(None)
-                except StopIteration:
-                    # Guess this coroutine ended without any yields
-                    return None
+                if isinstance(result, GeneratorType):
+                    coroutine = result
+                    try:
+                        coroutine_result = coroutine.send(None)
+                    except StopIteration:
+                        # Guess this coroutine ended without any yields
+                        return None
 
-        except KeyError:
-            _log.error(u'Unregistered directive {!r}.'.format(
-                message.directive))
-            _log.debug(u'Message details: {!r}, {!r}'.format(
-                message,
-                message.body
-            ))
-            ## Raise an exception here?  Probably?
-            # raise
+            except KeyError:
+                _log.error(u'Unregistered directive {!r}.'.format(
+                    message.directive))
+                _log.debug(u'Message details: {!r}, {!r}'.format(
+                    message,
+                    message.body
+                ))
+                ## Raise an exception here?  Probably?
+                # raise
 
         # If this is a coroutine, then we should handle putting its
         # results into the coroutine registry
