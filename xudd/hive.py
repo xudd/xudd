@@ -1,7 +1,7 @@
 from __future__ import print_function
 
+import asyncio
 import logging
-from collections import deque
 from itertools import count
 
 from xudd import PY2
@@ -27,7 +27,7 @@ class Hive(Actor):
 
     TODO: This docstring sucks ;)
     """
-    def __init__(self, hive_id=None):
+    def __init__(self, hive_id=None, loop=None):
         # id of the hive
         self.hive_id = hive_id or self.gen_actor_id()
 
@@ -40,12 +40,8 @@ class Hive(Actor):
         # Which actors this hive is managing
         self._actor_registry = {}
 
-        # Messages to be processed
-        self._message_queue = deque()
-
-        # This is actions for ourself to take, such as checking if an
-        # actor should be re-queued, and queueing messages to an actor
-        self.hive_action_queue = deque()
+        # Note: can we just trust the user to set the right policy?
+        self.loop = loop or asyncio.get_event_loop()
 
         # Set this to True to break the current loop
         self.should_stop = False
@@ -95,8 +91,7 @@ class Hive(Actor):
         """
         API for sending a message to an actor.
 
-        Note, not the same as queueing a message which is a more low-level
-        action.  This also constructs a proper Message object.
+        This also constructs a proper Message object.
         """
         message_id = id or self.gen_message_id()
         message = Message(
@@ -107,61 +102,50 @@ class Hive(Actor):
 
         _log.debug("send_message: %s", message)
 
-        self._message_queue.append(message)
+        self.loop.call_soon(self._process_message, message)
         return message_id
 
     def run(self):
         """
         Run the hive's main loop.
         """
-        while not self.should_stop:
-            # self._process_hive_actions()
-            self._process_messages()
+        self.loop.run_forever()
 
-    def _process_messages(self):
-        """
-        Process however many messages are currently on the queue.
-        """
-        # Note: the reason we don't run through all messages till exhaustion
-        #   is so that the run() loop has an opportunity to process other hive
-        #   actions after we finish going through these present messages
-        for i in range(len(self._message_queue)):
-            message = self._message_queue.popleft()
+    def _process_message(self, message):
+        # Route appropriately here
+        actor_id, hive_id = split_id(message.to)
 
-            # Route appropriately here
-            actor_id, hive_id = split_id(message.to)
+        ## Is the actor local?  Send it!
+        if hive_id == self.hive_id:
+            try:
+                actor = self._actor_registry[actor_id]
+            except IndexError:
+                # For some reason this actor wasn't found, so we may need to
+                # inform the original sender
+                _log.warning('recipient not found for message: {0}'.format(
+                    message))
 
-            ## Is the actor local?  Send it!
-            if hive_id == self.hive_id:
-                try:
-                    actor = self._actor_registry[actor_id]
-                except IndexError:
-                    # For some reason this actor wasn't found, so we may need to
-                    # inform the original sender
-                    _log.warning('recipient not found for message: {0}'.format(
-                        message))
+                self.return_to_sender(message)
 
-                    self.return_to_sender(message)
+            # Maybe not the most opportune place to attach this
+            message.hive_proxy = actor.hive
 
-                # Maybe not the most opportune place to attach this
-                message.hive_proxy = actor.hive
+            # TODO: More error handling here! ;)
+            actor.handle_message(message)
 
-                # TODO: More error handling here! ;)
-                actor.handle_message(message)
+        ## Looks like the actor must be remote, forward it!
+        else:
+            # Get the associated ambassador
+            ## TODO: error handling if hive doesn't exist ;)
+            ambassador_id = self._ambassadors[hive_id]
+            ambassador = self._actor_registry[ambassador_id]
 
-            ## Looks like the actor must be remote, forward it!
-            else:
-                # Get the associated ambassador
-                ## TODO: error handling if hive doesn't exist ;)
-                ambassador_id = self._ambassadors[hive_id]
-                ambassador = self._actor_registry[ambassador_id]
+            # repackage the message for sending
+            repackaged_message = self._repackage_message_for_forwarding(
+                message, ambassador)
 
-                # repackage the message for sending
-                repackaged_message = self._repackage_message_for_forwarding(
-                    message, ambassador)
-
-                # send it off!
-                ambassador.handle_message(repackaged_message)
+            # send it off!
+            ambassador.handle_message(repackaged_message)
 
 
     def _repackage_message_for_forwarding(self, message, ambassador):
@@ -240,7 +224,7 @@ class Hive(Actor):
     def send_shutdown(self):
         # We should have a more graceful shutdown feature that gives
         # the actors a chance to wrap up business ;)
-        self.should_stop = True
+        self.loop.stop()
 
     #############################
     # Common hive message routing
