@@ -43,9 +43,6 @@ class Hive(Actor):
         # Note: can we just trust the user to set the right policy?
         self.loop = loop or asyncio.get_event_loop()
 
-        # Set this to True to break the current loop
-        self.should_stop = False
-
         # Objects related to generating unique ids for messages
         self.message_uuid = base64_uuid4()
         self.message_counter = count()
