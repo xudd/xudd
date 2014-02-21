@@ -9,7 +9,7 @@ from xudd import PY2
 from xudd.message import Message
 from xudd.tools import (
     base64_uuid4, is_qualified_id, join_id, split_id,
-    import_component, MessageId)
+    import_component)
 from xudd.actor import Actor
 
 _log = logging.getLogger(__name__)
@@ -100,7 +100,7 @@ class Hive(Actor):
         _log.debug("send_message: %s", message)
 
         self.loop.call_soon(self._process_message, message)
-        return MessageId(message_id)
+        return message_id
 
     def run(self):
         """
