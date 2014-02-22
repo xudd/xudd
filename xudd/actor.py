@@ -141,6 +141,25 @@ class Actor(object):
             # it is, by definition, already replying!
             wants_reply=False)
 
+    def wait_on_future(self, future):
+        """
+        Set up a future to call us back when things are done.
+        """
+        reply_to_id = self.hive.gen_message_id()
+
+        def _message_return(future):
+            self.hive.send_message(
+                to=self.id,
+                from_id=self.id,
+                directive="future_reply",
+                in_reply_to=reply_to_id,
+                body={"future": future})
+
+        future.add_done_callback(_message_return)
+        # TODO: Add error handling
+
+        return reply_to_id
+
 
 class ActorProxy(object):
     def __init__(self, actor_id):

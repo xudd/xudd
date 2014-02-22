@@ -13,6 +13,7 @@ from xudd.actor import Actor
 from xudd.lib.multiprocess import MultiProcessAmbassador
 
 
+# Taken from asyncio docs
 @asyncio.coroutine
 def print_http_headers(url):
     url = urllib.parse.urlsplit(url)
@@ -48,10 +49,16 @@ class WebReader(Actor):
         self.hive.send_shutdown()
 
     def read_webs(self, message):
-        print("before readin")
+        print("first run via future_async()...")
+        future = asyncio.async(print_http_headers(message.body["url"]))
+        response = yield self.wait_on_future(future)
+        print("after first run")
+
+        print("before second one")
         future = asyncio.async(print_http_headers(message.body["url"]))
         future.add_done_callback(self._setup_chuckle_end)
-        print("after readin")
+        print("after second one's call")
+
 
 
 def main():
