@@ -3,6 +3,7 @@ from __future__ import print_function
 import asyncio
 import logging
 from itertools import count
+import signal
 
 from xudd import PY2
 
@@ -106,7 +107,10 @@ class Hive(Actor):
         """
         Run the hive's main loop.
         """
+        self.loop.add_signal_handler(signal.SIGINT, self.send_shutdown)
+        self.loop.add_signal_handler(signal.SIGTERM, self.send_shutdown)
         self.loop.run_forever()
+
 
     def _process_message(self, message):
         # Route appropriately here
