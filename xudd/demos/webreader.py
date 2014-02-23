@@ -61,19 +61,18 @@ class WebReader(Actor):
         # Next... Okay... This is Real Bona Fide asyncio style
         # "yield from" calls.
         #
-        # The difference... you have to do just "yield".  The XUDD
-        # actor takes care of the rest.
+        # It looks like yield *or* yield from both work :o
         print("now doing intermediate evil_print_http_headers...")
         url = message.body["url"]
 
         url = urllib.parse.urlsplit(url)
-        reader, writer = yield asyncio.open_connection(url.hostname, 80)
+        reader, writer = yield from asyncio.open_connection(url.hostname, 80)
         query = ('HEAD {url.path} HTTP/1.0\r\n'
                  'Host: {url.hostname}\r\n'
                  '\r\n').format(url=url)
         writer.write(query.encode('latin-1'))
         while True:
-            line = yield reader.readline()
+            line = yield from reader.readline()
             if not line:
                 break
 
