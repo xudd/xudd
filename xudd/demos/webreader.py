@@ -49,11 +49,20 @@ class WebReader(Actor):
         self.hive.send_shutdown()
 
     def read_webs(self, message):
+        # Okay, first let's try doing this the "wait on future" style hack..
+        # This is like asyncio support where we get the result back as a
+        # message.
+        # Pretty weird.
         print("first run via future_async()...")
         future = asyncio.async(print_http_headers(message.body["url"]))
         response = yield self.wait_on_future(future)
         print("after first run")
 
+        # Next... Okay... This is Real Bona Fide asyncio style
+        # "yield from" calls.
+        #
+        # The difference... you have to do just "yield".  The XUDD
+        # actor takes care of the rest.
         print("now doing intermediate evil_print_http_headers...")
         url = message.body["url"]
 
@@ -73,11 +82,12 @@ class WebReader(Actor):
                 print("HTTP header> %s" % line)
         print("Ultimate evil complete.")
 
+        # Lastly, use the asyncio loop pretty much just connecting back to the
+        # XUDDiverse manually
         print("before second one")
         future = asyncio.async(print_http_headers(message.body["url"]))
         future.add_done_callback(self._setup_chuckle_end)
         print("after second one's call")
-
 
 
 def main():
