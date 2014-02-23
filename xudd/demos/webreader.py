@@ -54,6 +54,25 @@ class WebReader(Actor):
         response = yield self.wait_on_future(future)
         print("after first run")
 
+        print("now doing intermediate evil_print_http_headers...")
+        url = message.body["url"]
+
+        url = urllib.parse.urlsplit(url)
+        reader, writer = yield asyncio.open_connection(url.hostname, 80)
+        query = ('HEAD {url.path} HTTP/1.0\r\n'
+                 'Host: {url.hostname}\r\n'
+                 '\r\n').format(url=url)
+        writer.write(query.encode('latin-1'))
+        while True:
+            line = yield reader.readline()
+            if not line:
+                break
+
+            line = line.decode("latin1").rstrip()
+            if line:
+                print("HTTP header> %s" % line)
+        print("Ultimate evil complete.")
+
         print("before second one")
         future = asyncio.async(print_http_headers(message.body["url"]))
         future.add_done_callback(self._setup_chuckle_end)
