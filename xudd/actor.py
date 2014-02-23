@@ -1,3 +1,4 @@
+import asyncio
 from types import GeneratorType
 from functools import wraps
 import logging
@@ -54,6 +55,7 @@ class Actor(object):
         """
         Handle a message being sent to this actor.
         """
+        coroutine = None
         coroutine_result = None
 
         # If this message is continuing a coroutine-in-waiting, we'll
@@ -95,17 +97,35 @@ class Actor(object):
                 ## Raise an exception here?  Probably?
                 # raise
 
-        # If this is a coroutine, then we should handle putting its
-        # results into the coroutine registry
-        if coroutine_result:
+        if coroutine is not None:
+            self._handle_coroutine_result(
+                coroutine_result, coroutine)
+
+    def _handle_coroutine_result(self, coroutine_result, original_coroutine):
+        if coroutine_result is None:
+            return
+        elif isinstance(coroutine_result, str):
             # since the coroutine returned a message_id that was sent,
             # we should add this message's id to the registry
-            
-            # TODO: Clean this up in the asyncio branch
             message_id = coroutine_result
-            self._waiting_coroutines[message_id] = coroutine
+            self._waiting_coroutines[message_id] = original_coroutine
             return
+        else:
+            # It's probably something asyncio'able... presumably! :)
+            # ... It'd better be!
+            def asyncio_resume(future):
+                future_result = future.result()
+                try:
+                    coroutine_result = original_coroutine.send(
+                        future_result)
+                except StopIteration:
+                    # And our job is done
+                    return
 
+                self._handle_coroutine_result(
+                    coroutine_result, original_coroutine)
+            task = asyncio.async(coroutine_result)
+            task.add_done_callback(asyncio_resume)
 
     def send_message(self, *args, **kwargs):
         return self.hive.send_message(*args, **kwargs)
