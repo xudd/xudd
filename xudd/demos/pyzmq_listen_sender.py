@@ -6,8 +6,6 @@ Fire this up and you can start sending messages to the listener.
 
 import zmq
 
-from xudd import PY2
-
 
 def main():
     context = zmq.Context()
@@ -15,10 +13,7 @@ def main():
     socket.bind("ipc:///tmp/zmqtest")
 
     while True:
-        if PY2:
-            message_to_send = raw_input(u"RETRO_PROMPT> ")
-        else:
-            message_to_send = input(u"RETRO_PROMPT> ")
+        message_to_send = input(u"RETRO_PROMPT> ")
 
         if message_to_send == u"quit":
             return

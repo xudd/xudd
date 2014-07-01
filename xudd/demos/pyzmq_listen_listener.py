@@ -6,7 +6,6 @@ from __future__ import print_function
 
 import zmq
 
-from xudd import PY2
 from xudd.hive import Hive
 from xudd.actor import Actor
 

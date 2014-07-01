@@ -5,8 +5,6 @@ import logging
 from itertools import count
 import signal
 
-from xudd import PY2
-
 from xudd.message import Message
 from xudd.tools import (
     base64_uuid4, is_qualified_id, join_id, split_id,
@@ -204,10 +202,7 @@ class Hive(Actor):
         """
         # This method should be thread safe, I think, without need for a lock:
         #   http://29a.ch/2009/2/20/atomic-get-and-increment-in-python
-        if PY2:
-            return u"%s:%s" % (self.message_uuid, self.message_counter.next())
-        else:
-            return u"%s:%s" % (self.message_uuid, self.message_counter.__next__())
+        return u"%s:%s" % (self.message_uuid, self.message_counter.__next__())
 
     def create_actor(self, actor_class, *args, **kwargs):
         hive_proxy = self.gen_proxy()

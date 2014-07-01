@@ -4,7 +4,6 @@ import argparse
 from itertools import count
 import random
 
-from xudd import PY2
 from xudd.hive import Hive
 from xudd.actor import Actor
 
@@ -71,10 +70,7 @@ STUDENTS = [
 
 def gen_student_name():
     name, counter = random.choice(STUDENTS)
-    if PY2:
-        next = counter.next()
-    else:
-        next = counter.__next__()
+    next = counter.__next__()
 
     return "%s-%s" % (name, next)
 

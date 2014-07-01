@@ -5,7 +5,6 @@ from threading import Thread, Lock
 from itertools import count
 
 from xudd.hive import HiveProxy
-from xudd import PY2
 
 try:
     from queue import Queue, Empty
@@ -58,18 +57,7 @@ class HiveWorker(Thread):
         # Get an actor from the actor queue
         #
         try:
-            # Why do this differently for python 2 and python 3??
-            # Doing just .get() without a block means a constant loop,
-            # but oddly there was a bug in python 2.X that got
-            # resolved where doing block with a timeout would both
-            # thrash, take up a ton of CPU, and go super slowly... so
-            # we don't use it in 2.X
-            if PY2:
-                actor = self.actor_queue.get(
-                    block=False)
-            else:
-                actor = self.actor_queue.get(
-                    block=True, timeout=1)
+            actor = self.actor_queue.get(block=True, timeout=1)
         except Empty:
             # We didn't do anything this round, oh well
             return False
@@ -123,10 +111,7 @@ class Hive(Thread):
         self.should_stop = False
 
         # Objects related to generating unique ids for messages
-        if PY2:
-            self.message_uuid = unicode(uuid.uuid4())
-        else:
-            self.message_uuid = str(uuid.uuid4())
+        self.message_uuid = str(uuid.uuid4())
 
         self.message_counter = count()
 
@@ -216,10 +201,7 @@ class Hive(Thread):
             try:
                 # see the comment in HiveWorker's process_actor to see
                 # why this is
-                if PY2:
-                    action = self.hive_action_queue.get(block=False)
-                else:
-                    action = self.hive_action_queue.get(block=True, timeout=1)
+                action = self.hive_action_queue.get(block=True, timeout=1)
             except Empty:
                 continue
 
@@ -251,10 +233,7 @@ class Hive(Thread):
         """
         Generate an actor id.
         """
-        if PY2:
-            return unicode(uuid.uuid4())
-        else:
-            return str(uuid.uuid4())
+        return str(uuid.uuid4())
 
     def gen_message_id(self):
         """
@@ -265,10 +244,7 @@ class Hive(Thread):
         """
         # This method should be thread safe, I think, without need for a lock:
         #   http://29a.ch/2009/2/20/atomic-get-and-increment-in-python
-        if PY2:
-            return u"%s:%s" % (self.message_uuid, self.message_counter.next())
-        else:
-            return u"%s:%s" % (self.message_uuid, self.message_counter.__next__())
+        return u"%s:%s" % (self.message_uuid, self.message_counter.__next__())
 
     def create_actor(self, actor_class, *args, **kwargs):
         hive_proxy = self.gen_proxy()

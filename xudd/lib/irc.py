@@ -1,17 +1,13 @@
 import logging
 import re
 
-from xudd import PY2
 from xudd.actor import Actor
 from xudd.contrib.irc import ParsedMessage, ParsedParams, ParsedPrefix
 
 _log = logging.getLogger(__name__)
 
 
-if PY2:
-    IRC_EOL = '\r\n'
-else:
-    IRC_EOL = b'\r\n'
+IRC_EOL = b'\r\n'
 
 
 class IRCClient(Actor):
@@ -29,10 +25,7 @@ class IRCClient(Actor):
 
         self.encoding = encoding
 
-        if PY2:
-            self.incoming = ''
-        else:
-            self.incoming = b''
+        self.incoming = b''
 
     def send_if_line(self, original_message, response_from_handler):
         if 'line' in response_from_handler.body:
@@ -105,13 +98,7 @@ class IRCClient(Actor):
                 self.send_if_line(message, response)
 
     def decode(self, str_or_bytes):
-        if PY2:
-            return str_or_bytes.decode(self.encoding, 'replace')
-        else:
-            return str(str_or_bytes, encoding=self.encoding)
+        return str(str_or_bytes, encoding=self.encoding)
 
     def encode(self, str_or_unicode):
-        if PY2:
-            return str_or_unicode.encode(self.encoding, 'replace')
-        else:
-            return bytes(str_or_unicode, encoding=self.encoding)
+        return bytes(str_or_unicode, encoding=self.encoding)

@@ -2,16 +2,12 @@ import logging
 import re
 import platform
 
-from xudd import PY2
 from xudd.actor import Actor
 from xudd.lib.tcp import Client
 
 
 
-if PY2:
-    EOL = '\r\n'
-else:
-    EOL = b'\r\n'
+EOL = b'\r\n'
 
 _log = logging.getLogger(__name__)
 
