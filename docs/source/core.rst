@@ -55,7 +55,7 @@ There are three essential components to XUDD's design:
 
   Actors do not get direct access to the Hive, but instead have a
   "HiveProxy" object.  They use this to send messages from actor to
-  actor, intializing new actors, or requesting shutdown of the hive
+  actor, initializing new actors, or requesting shutdown of the hive
   and all actors.
 
 
@@ -129,7 +129,7 @@ to actually initialize an actor, like so:
         EvilRobot)
 
     # Create an actor with specific arguments and keyword arguments
-    # in this case, the first argument is the BattleBot's infrantry rank
+    # in this case, the first argument is the BattleBot's infantry rank
     minion_bot = hive.create_actor(
         BattleBot, "minion",
         weapons=["pokey stick"])
@@ -173,7 +173,7 @@ Technically, an actor is only *required* to have the following properties:
    to "suspend" themselves via coroutines while they
    :ref:`yield in wait for replies <yielding_for_replies>`, as well as
    features such as automatically
-   :ref:`replying to mesages <replying_to_messages>`.
+   :ref:`replying to messages <replying_to_messages>`.
    Your actor does not have to use this logic, though it's recommended
    that if you do deviate from the patterns in the basic actor's
    `handle_message`, do so with care!  There are safeguards there to make

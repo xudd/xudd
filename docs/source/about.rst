@@ -176,7 +176,7 @@ You could break your game out like so:
   coroutines, you don't need to split this process of sending a
   message out and waiting for a response into multiple
   functions... you can just `yield` until the character being
-  attacked lets you know whether you succeded in hitting them.
+  attacked lets you know whether you succeeded in hitting them.
 
 - Build every character and item from a base actor class which is
   itself serializable.  Upon shutdown of the world, every character
@@ -187,7 +187,7 @@ Thanks to inter-hive communication, if your game world got
 particularly large, you could shard components of it and keep
 characters that are in one part of the world on one process and
 characters that are in another part of the world on another process,
-but still allow them to communicate and send mesages to each other.
+but still allow them to communicate and send messages to each other.
 
 
 Distributed data crunching
