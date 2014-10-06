@@ -4,7 +4,7 @@ XUDD Tutorial
 
 This tutorial should walk you through most of the main features of
 XUDD.  The actual code that's written is pretty short (only about 200
-lines) but the explaination is a bit lengthy... that's because by the
+lines) but the explanation is a bit lengthy... that's because by the
 time you're done reading this tutorial, you should have a pretty good
 sense of all the basics!
 
@@ -92,7 +92,7 @@ through the `main()` function:
   "init_world".  Once the hive starts, the Overseer will look to see
   if it has a message handler for that directive and will try to
   perform whatever actions are needed.
-- Then we actually start the Hive up... it runs till the simultation
+- Then we actually start the Hive up... it runs till the simulation
   completes, then the program exits.
 
 You might be wondering, why not do this instead?
@@ -145,7 +145,7 @@ Replace the Overseer class with this code:
         """
         Create a list of (shuffled) clean droids and infected droids
         """
-        droids = [Flase] * num_clean + [True] * num_infected
+        droids = [False] * num_clean + [True] * num_infected
         random.shuffle(droids)
         return droids
         
@@ -286,7 +286,7 @@ message sending:
   later) before we can continue.  XUDD's coroutine nature makes this
   fairly easy.
 
-This was a lot of explaination for a small amount of code!  But don't
+This was a lot of explanation for a small amount of code!  But don't
 worry, we covered a lot of ground here.
 
 

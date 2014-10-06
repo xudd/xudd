@@ -49,7 +49,7 @@ You can find our code at: https://github.com/xudd/xudd/
   "The greatest threat to our children since Dungeons and Dragons."
     -- Somebody's Relative
   
-  "It's an asyncronous actor model system for Python... I don't
+  "It's an asynchronous actor model system for Python... I don't
    understand what this has to do with chaotic deities, or why it's
    called XUDD."
     -- Someone reading this document

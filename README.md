@@ -29,7 +29,7 @@ XUDD: A Python Actor Model System
 "The greatest threat to our children since Dungeons and Dragons."
   -- Somebody's Relative
 
-"It's an asyncronous actor model system for Python... I don't
+"It's an asynchronous actor model system for Python... I don't
  understand what this has to do with chaotic deities, or why it's
  called XUDD."
   -- Someone reading this document
@@ -70,8 +70,8 @@ XUDD is designed with plans for various uses:
    not?  The actor model is perfect for this.
  - Distributed data crunching.
 
-Of couse, a lot of this is speculative.  I'm not sure if we'll
-actually acheive all that... for now this is a lot of theory. :) Right
+Of course, a lot of this is speculative.  I'm not sure if we'll
+actually achieve all that... for now this is a lot of theory. :) Right
 now we're mostly just laying down the infrastructure.  Interested?  We
 could use your help.
 
@@ -81,9 +81,9 @@ Why?
 
 Twisted and Node.js are cool, but frankly, I have a hard time
 following code that's broken into a billion tiny event'y callbacks.
-Basically, eventually I feel like you're fighting the Flying Spagetti
+Basically, eventually I feel like you're fighting the Flying Spaghetti
 Monster of code.  Within the cult of XUDD we hope to banish Flying
-Spagetti Monster code and raise old, chaotic gods of the actor model
+Spaghetti Monster code and raise old, chaotic gods of the actor model
 and have them lord over our processing.  Yesssss....
 
 Besides, I think the actor model is pretty cool, and we don't have a

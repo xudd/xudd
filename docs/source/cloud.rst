@@ -4,7 +4,7 @@ XUDD Marketing For People Who Like The Word "Cloud"
 
 Ever wanted to write actors in the cloud?  Now with XUDD, YOU CAN!
 
-XUDD's an asychronous actor model system.  Run a cloud of actors!
+XUDD's an asynchronous actor model system.  Run a cloud of actors!
 Dynamic load balancing across actor pools!  It's so simple!  You just
 set and up and forget about it, instant web scale.
 
