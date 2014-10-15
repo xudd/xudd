@@ -73,7 +73,10 @@ def main():
     logging.basicConfig(level=logging.DEBUG)
 
     # Fails stupidly if no username given
-    username = sys.argv[1]
+    try:
+        username = sys.argv[1]
+    except IndexError:
+        raise IndexError("You gotta provide a username as first arg, yo")
 
     hive = Hive()
     irc_bot = hive.create_actor(IrcBot, username)
