@@ -40,7 +40,9 @@ Nonetheless, that might look daunting.  From the `main()` method
 though, it's obvious that the first thing done is to handle a
 `connect_and_run` method on the IRC bot (the handler of which just so
 happens to be `connect_and_run()`.  So let's look at that method in
-detail::
+detail:
+
+.. code-block:: python
 
     def connect_and_run(self, message):
         self.reader, self.writer = yield from asyncio.open_connection(
