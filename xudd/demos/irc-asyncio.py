@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import asyncio
 import logging
+import sys
 
 from xudd.actor import Actor
 from xudd.hive import Hive
@@ -16,13 +17,18 @@ IRC_EOL = b'\r\n'
 
 class IrcBot(Actor):
     def __init__(self, hive, id,
-                 nick="ppnx2", user="ppnx2",
-                 realname="XUDD Bot 2"):
+                 nick, user=None,
+                 realname="XUDD Bot 2",
+                 connect_hostname="irc.freenode.net",
+                 connect_port=6667):
         super().__init__(hive, id)
 
-        self.user = user
         self.realname = realname
         self.nick = nick
+        self.user = user or nick
+
+        self.connect_hostname = connect_hostname
+        self.connect_port = connect_port
 
         self.authenticated = False
         self.reader = None
@@ -33,8 +39,8 @@ class IrcBot(Actor):
 
     def connect_and_run(self, message):
         self.reader, self.writer = yield from asyncio.open_connection(
-            message.body.get("hostname", "irc.freenode.net"),
-            message.body.get("port", 6667))
+            message.body.get("hostname", self.connect_hostname),
+            message.body.get("port", self.connect_port))
 
         self.login()
         while True:
@@ -66,8 +72,11 @@ class IrcBot(Actor):
 def main():
     logging.basicConfig(level=logging.DEBUG)
 
+    # Fails stupidly if no username given
+    username = sys.argv[1]
+
     hive = Hive()
-    irc_bot = hive.create_actor(IrcBot)
+    irc_bot = hive.create_actor(IrcBot, username)
 
     hive.send_message(
         to=irc_bot,
