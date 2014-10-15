@@ -30,8 +30,8 @@ A simple IRC bot
 For a good example of this, let's look at this simple IRC bot (no need
 to follow it all, we'll break it down):
 
-.. include:: ../../xudd/demos/irc-asyncio.py
-   :code: python
+.. literalinclude:: ../../xudd/demos/irc-asyncio.py
+   :language: python
 
 This bot, as written above, doesn't do much... it just logs in and
 spits out all messages it receives to the log as debugging info.
