@@ -86,9 +86,3 @@ sure that your subroutine is itself a coroutine and `yield from` that
 too!  TODO: show an example.)
 
 
-A bit of clarification
-----------------------
-
-XUDD didn't always use asyncio, and in fact, the goal of using "yield
-from" in XUDD existed before asyncio existed (or even before "yield
-from" itself did, but that's a bit of a digression).  Because of this, 
