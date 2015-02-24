@@ -41,9 +41,6 @@ we'd love you to join our community!  Join #xudd on irc.freenode.net.
 
 You can find our code at: https://github.com/xudd/xudd/
 
-(**Note:** `XUDD is stuck <http://dustycloud.org/blog/why-xudd-is-stuck/>`_,
-but maybe you have ideas on how to unstick it?)
-
 :: 
 
   "I have seen the future... and the future is XUDD!"
